@@ -1,32 +1,19 @@
 <?php
-
-/**
- * Plugin Name: Custom Link Design Pattern
- * Description: Une extension pour créer des liens personnalisés avec des design patterns.
- * Version: 1.0
- * Author: Tamara VIOLEAU
- */
-
-// Enregistrer les styles CSS
-function custom_link_enqueue_styles()
-{
-    wp_enqueue_style('custom-link-styles', plugin_dir_url(__FILE__) . 'css/styles.css');
-}
-add_action('wp_enqueue_scripts', 'custom_link_enqueue_styles');
-
-function custom_link_admin_enqueue_scripts()
-{
+//Fichier CSS
+function custom_link_admin_enqueue_scripts() {
     wp_enqueue_style('custom-link-admin-styles', plugin_dir_url(__FILE__) . 'css/style-admin.css');
 }
 add_action('admin_enqueue_scripts', 'custom_link_admin_enqueue_scripts');
 
+function custom_link_enqueue_styles() {
+    wp_enqueue_style('custom-link-styles', plugin_dir_url(__FILE__) . 'css/styles.css');
+}
+add_action('wp_enqueue_scripts', 'custom_link_enqueue_styles');
 
-function custom_link_enqueue_scripts()
-{
+function custom_link_enqueue_scripts() {
     wp_enqueue_script('custom-link-scripts', plugin_dir_url(__FILE__) . 'js/scripts.js', array(), '1.0', true);
 }
 add_action('wp_enqueue_scripts', 'custom_link_enqueue_scripts');
-
 
 // Créer la table lors de l'activation de l'extension
 function custom_link_create_table()
@@ -149,7 +136,7 @@ function custom_link_links_page()
 
 
     // Liste des liens existants
-    $links = $wpdb->get_results("SELECT id, text, design_pattern FROM $table_name");
+    $links = $wpdb->get_results("SELECT id, text, design_pattern FROM $table_name ORDER BY id DESC");
 
     echo '<h2>Liste des liens personnalisés</h2>';
     echo '<div class="grid-table">';
