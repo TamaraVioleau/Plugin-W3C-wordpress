@@ -1,0 +1,36 @@
+/*CSS POUR TABLEAU DESIGN PATTERN LIENS (côté admin)*/
+.grid-table {
+    display: table;
+    width: 100%;
+  }
+  
+  .grid-header,
+  .grid-row {
+    display: table-row;
+  }
+  
+  .grid-cell {
+    display: table-cell;
+    padding: 8px;
+    border: 1px solid #ccc;
+  }
+  
+  .grid-header .grid-cell {
+    font-weight: bold;
+    background-color: #f0f0f0;
+  }
+  
+  .copy-shortcode-btn {
+    cursor: pointer;
+  }
+  
+  .button {
+    margin-left: 5px;
+  }
+
+  .wp-core-ui .button, .wp-core-ui .button-secondary{
+  vertical-align: baseline;}
+
+  input{
+    margin: 0 1rem;
+  }

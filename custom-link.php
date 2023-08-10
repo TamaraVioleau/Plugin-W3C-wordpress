@@ -14,9 +14,16 @@ function custom_link_enqueue_styles()
 }
 add_action('wp_enqueue_scripts', 'custom_link_enqueue_styles');
 
+function custom_link_admin_enqueue_scripts()
+{
+    wp_enqueue_style('custom-link-admin-styles', plugin_dir_url(__FILE__) . 'css/style-admin.css');
+}
+add_action('admin_enqueue_scripts', 'custom_link_admin_enqueue_scripts');
+
+
 function custom_link_enqueue_scripts()
 {
-    wp_enqueue_script('custom-link-scripts', plugin_dir_url(__FILE__) . 'scripts.js', array(), '1.0', true);
+    wp_enqueue_script('custom-link-scripts', plugin_dir_url(__FILE__) . 'js/scripts.js', array(), '1.0', true);
 }
 add_action('wp_enqueue_scripts', 'custom_link_enqueue_scripts');
 
@@ -145,32 +152,32 @@ function custom_link_links_page()
     $links = $wpdb->get_results("SELECT id, text, design_pattern FROM $table_name");
 
     echo '<h2>Liste des liens personnalisés</h2>';
-    echo '<table>';
-    echo '<thead><tr><th>Intitulé</th><th>Shortcode</th><th>Action</th></tr></thead>';
-    echo '<tbody>';
+    echo '<div class="grid-table">';
+    echo '<div class="grid-header">';
+    echo '<div class="grid-cell">Intitulé</div><div class="grid-cell">Shortcode</div><div class="grid-cell">Action</div>';
+    echo '</div>'; // Fin de l'en-tête
 
     foreach ($links as $link) {
         $shortcode = '[custom_link id="' . $link->id . '"]';
-        echo '<tr>';
-        echo '<td>' . esc_html(stripslashes($link->design_pattern)) . '</td>';
-        echo '<td>' . esc_html($shortcode) . ' <button class="copy-shortcode-btn" data-shortcode="' . esc_attr($shortcode) . '">Copier</button></td>';
-        echo '<td>';
-        echo '<form method="post" action="" style="display: inline-block;">';
-        echo '<input type="hidden" name="delete_link" value="' . esc_attr($link->id) . '">';
-        echo '<input type="submit" value="Supprimer">';
-        echo '</form>';
-        // Ajout du bouton de modification
+        echo '<div class="grid-row">';
+        echo '<div class="grid-cell">' . esc_html(stripslashes($link->design_pattern)) . '</div>';
+        echo '<div class="grid-cell">' . esc_html($shortcode) . ' <button class="copy-shortcode-btn" data-shortcode="' . esc_attr($shortcode) . '">Copier</button></div>';
+        echo '<div class="grid-cell">';
+        // Bouton de modification
         echo '<form method="post" action="" style="display: inline-block;">';
         echo '<input type="hidden" name="edit_link" value="' . esc_attr($link->id) . '">';
         echo '<input type="submit" value="Modifier" class="button">';
         echo '</form>';
-        echo '</td>';
-        echo '</tr>';
+        // Bouton de suppression
+        echo '<form method="post" action="" style="display: inline-block;">';
+        echo '<input type="hidden" name="delete_link" value="' . esc_attr($link->id) . '">';
+        echo '<input type="submit" value="Supprimer">';
+        echo '</form>';
+        echo '</div>';
+        echo '</div>'; // Fin de la ligne
     }
-    
 
-    echo '</tbody>';
-    echo '</table>';
+    echo '</div>'; // Fin de la table
 
     // Gérer la suppression
     if (isset($_POST['delete_link'])) {
@@ -179,12 +186,13 @@ function custom_link_links_page()
         echo '<div class="notice notice-success"><p>Lien supprimé avec succès!</p></div>';
     }
 
+    //Gérer la modification
     if (isset($_POST['submit_update'])) {
         $id_to_update = intval($_POST['update_link']);
         $url = sanitize_text_field($_POST['url']);
         $text = stripslashes(sanitize_text_field($_POST['text']));
         $design_pattern = sanitize_text_field($_POST['design_pattern']);
-    
+
         $wpdb->update(
             $table_name,
             array('url' => $url, 'text' => $text, 'design_pattern' => $design_pattern),
@@ -192,17 +200,17 @@ function custom_link_links_page()
             array('%s', '%s', '%s'),
             array('%d')
         );
-    
+
         echo '<div class="notice notice-success"><p>Lien mis à jour avec succès!</p></div>';
     }
-    
 
-// Si un lien a été sélectionné pour modification, affichez le formulaire de modification
-if (isset($_POST['edit_link'])) {
-    $id_to_edit = intval($_POST['edit_link']);
-    $link_to_edit = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id_to_edit));
 
-    echo '<div class="wrap">
+    // Si un lien a été sélectionné pour modification, affichez le formulaire de modification
+    if (isset($_POST['edit_link'])) {
+        $id_to_edit = intval($_POST['edit_link']);
+        $link_to_edit = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id_to_edit));
+
+        echo '<div class="wrap">
         <h2>Modifier un lien personnalisé</h2>
         <form method="post">
             <input type="hidden" name="update_link" value="' . esc_attr($link_to_edit->id) . '">
@@ -223,13 +231,13 @@ if (isset($_POST['edit_link'])) {
             <input type="submit" name="submit_update" class="button button-primary" value="Mettre à jour le lien">
         </form>
     </div>';
+    }
 }
 
-
-}
-
-function custom_link_enqueue_copy_script() {
-    if ( isset( $_GET['page'] ) && $_GET['page'] === 'design_pattern_w3c' ) {
+//Fonction pour copier le shortcode 
+function custom_link_enqueue_copy_script()
+{
+    if (isset($_GET['page']) && $_GET['page'] === 'design_pattern_w3c') {
         echo '<script>
             document.addEventListener("DOMContentLoaded", function() {
                 var copyButtons = document.querySelectorAll(".copy-shortcode-btn");
@@ -250,11 +258,3 @@ function custom_link_enqueue_copy_script() {
     }
 }
 add_action('admin_footer', 'custom_link_enqueue_copy_script');
-
-
-// Fonction pour afficher le contenu de la sous-page "Carrousel"
-function custom_link_carrousel_page()
-{
-    // Code pour le formulaire de création de carrousel ou autre contenu
-    // ...
-}
