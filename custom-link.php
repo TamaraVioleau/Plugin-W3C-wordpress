@@ -153,7 +153,7 @@ function custom_link_links_page()
         $shortcode = '[custom_link id="' . $link->id . '"]';
         echo '<tr>';
         echo '<td>' . esc_html(stripslashes($link->design_pattern)) . '</td>';
-        echo '<td>' . esc_html($shortcode) . '</td>';
+        echo '<td>' . esc_html($shortcode) . ' <button class="copy-shortcode-btn" data-shortcode="' . esc_attr($shortcode) . '">Copier</button></td>';
         echo '<td>';
         echo '<form method="post" action="" style="display: inline-block;">';
         echo '<input type="hidden" name="delete_link" value="' . esc_attr($link->id) . '">';
@@ -227,6 +227,30 @@ if (isset($_POST['edit_link'])) {
 
 
 }
+
+function custom_link_enqueue_copy_script() {
+    if ( isset( $_GET['page'] ) && $_GET['page'] === 'design_pattern_w3c' ) {
+        echo '<script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var copyButtons = document.querySelectorAll(".copy-shortcode-btn");
+                copyButtons.forEach(function(btn) {
+                    btn.addEventListener("click", function(e) {
+                        var shortcode = e.target.getAttribute("data-shortcode");
+                        var textarea = document.createElement("textarea");
+                        textarea.value = shortcode;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand("copy");
+                        document.body.removeChild(textarea);
+                        alert("Shortcode copié dans le presse-papiers : " + shortcode);
+                    });
+                });
+            });
+        </script>';
+    }
+}
+add_action('admin_footer', 'custom_link_enqueue_copy_script');
+
 
 // Fonction pour afficher le contenu de la sous-page "Carrousel"
 function custom_link_carrousel_page()
