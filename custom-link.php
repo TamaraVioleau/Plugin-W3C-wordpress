@@ -155,13 +155,19 @@ function custom_link_links_page()
         echo '<td>' . esc_html(stripslashes($link->design_pattern)) . '</td>';
         echo '<td>' . esc_html($shortcode) . '</td>';
         echo '<td>';
-        echo '<form method="post" action="">';
+        echo '<form method="post" action="" style="display: inline-block;">';
         echo '<input type="hidden" name="delete_link" value="' . esc_attr($link->id) . '">';
         echo '<input type="submit" value="Supprimer">';
+        echo '</form>';
+        // Ajout du bouton de modification
+        echo '<form method="post" action="" style="display: inline-block;">';
+        echo '<input type="hidden" name="edit_link" value="' . esc_attr($link->id) . '">';
+        echo '<input type="submit" value="Modifier" class="button">';
         echo '</form>';
         echo '</td>';
         echo '</tr>';
     }
+    
 
     echo '</tbody>';
     echo '</table>';
@@ -172,6 +178,54 @@ function custom_link_links_page()
         $wpdb->delete($table_name, array('id' => $id_to_delete), array('%d'));
         echo '<div class="notice notice-success"><p>Lien supprimé avec succès!</p></div>';
     }
+
+    if (isset($_POST['submit_update'])) {
+        $id_to_update = intval($_POST['update_link']);
+        $url = sanitize_text_field($_POST['url']);
+        $text = stripslashes(sanitize_text_field($_POST['text']));
+        $design_pattern = sanitize_text_field($_POST['design_pattern']);
+    
+        $wpdb->update(
+            $table_name,
+            array('url' => $url, 'text' => $text, 'design_pattern' => $design_pattern),
+            array('id' => $id_to_update),
+            array('%s', '%s', '%s'),
+            array('%d')
+        );
+    
+        echo '<div class="notice notice-success"><p>Lien mis à jour avec succès!</p></div>';
+    }
+    
+
+// Si un lien a été sélectionné pour modification, affichez le formulaire de modification
+if (isset($_POST['edit_link'])) {
+    $id_to_edit = intval($_POST['edit_link']);
+    $link_to_edit = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id_to_edit));
+
+    echo '<div class="wrap">
+        <h2>Modifier un lien personnalisé</h2>
+        <form method="post">
+            <input type="hidden" name="update_link" value="' . esc_attr($link_to_edit->id) . '">
+            <table class="form-table">
+                <tr>
+                    <th><label for="design_pattern">Intitulé du lien</label></th>
+                    <td><input type="text" name="design_pattern" id="design_pattern" value="' . esc_attr(stripslashes($link_to_edit->design_pattern)) . '" class="regular-text" required></td>
+                </tr>
+                <tr>
+                    <th><label for="url">URL</label></th>
+                    <td><input type="text" name="url" id="url" value="' . esc_attr($link_to_edit->url) . '" class="regular-text" required></td>
+                </tr>
+                <tr>
+                    <th><label for="text">Texte visible</label></th>
+                    <td><input type="text" name="text" id="text" value="' . esc_attr(stripslashes($link_to_edit->text)) . '" class="regular-text" required></td>
+                </tr>
+            </table>
+            <input type="submit" name="submit_update" class="button button-primary" value="Mettre à jour le lien">
+        </form>
+    </div>';
+}
+
+
 }
 
 // Fonction pour afficher le contenu de la sous-page "Carrousel"
