@@ -1,27 +1,34 @@
 <?php
-//Fichier CSS
-function custom_link_admin_enqueue_scripts() {
+// Section pour inclure les fichiers CSS
+// Chargement du fichier CSS dans le panneau d'administration WordPress
+function custom_link_admin_enqueue_scripts()
+{
     wp_enqueue_style('custom-link-admin-styles', plugin_dir_url(__FILE__) . 'css/style-admin.css');
 }
 add_action('admin_enqueue_scripts', 'custom_link_admin_enqueue_scripts');
 
-function custom_link_enqueue_styles() {
+// Chargement du fichier CSS pour le front-end du site
+function custom_link_enqueue_styles()
+{
     wp_enqueue_style('custom-link-styles', plugin_dir_url(__FILE__) . 'css/styles.css');
 }
 add_action('wp_enqueue_scripts', 'custom_link_enqueue_styles');
 
-function custom_link_enqueue_scripts() {
+// Chargement du fichier JavaScript pour le front-end du site
+function custom_link_enqueue_scripts()
+{
     wp_enqueue_script('custom-link-scripts', plugin_dir_url(__FILE__) . 'js/scripts.js', array(), '1.0', true);
 }
 add_action('wp_enqueue_scripts', 'custom_link_enqueue_scripts');
 
-// Créer la table lors de l'activation de l'extension
+// Créer une table dans la base de données lors de l'activation du plugin
 function custom_link_create_table()
 {
     global $wpdb;
     $table_name = $wpdb->prefix . 'custom_links';
     $charset_collate = $wpdb->get_charset_collate();
 
+    // Instruction SQL pour créer la table
     $sql = "CREATE TABLE $table_name (
          id mediumint(9) NOT NULL AUTO_INCREMENT,
          url varchar(255) NOT NULL,
@@ -30,69 +37,37 @@ function custom_link_create_table()
          UNIQUE KEY id (id)
      ) $charset_collate;";
 
+    // Inclure le fichier upgrade.php et exécuter dbDelta pour créer la table
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
 }
 register_activation_hook(__FILE__, 'custom_link_create_table');
 
-// Fonction de shortcode pour afficher le lien
+// Fonction pour créer un shortcode permettant d'afficher un lien
 function custom_link_shortcode($atts)
 {
     global $wpdb;
     $atts = shortcode_atts(array('id' => 0), $atts);
     $table_name = $wpdb->prefix . 'custom_links';
 
-    // Rechercher le lien dans la base de données
+    // Requête pour rechercher le lien dans la base de données
     $link = $wpdb->get_row($wpdb->prepare("SELECT url, text, design_pattern FROM $table_name WHERE id = %d", $atts['id']));
 
     if (!$link) return '';
 
-    // Retourner le HTML du lien
+    // Retourner le HTML du lien avec le design pattern correspondant
     return "<span tabindex=\"0\" role=\"link\" onclick=\"goToLink(event, '{$link->url}')\" onkeydown=\"goToLink(event, '{$link->url}')\" class=\"{$link->design_pattern}\">" . stripslashes($link->text) . "</span>";
 }
 add_shortcode('custom_link', 'custom_link_shortcode');
 
 
-//Enregistrement du menu d'administration:
-function custom_link_admin_menu()
-{
-    add_menu_page(
-        'Design Pattern W3C',  // Titre de la page
-        'Design Pattern W3C',  // Titre du menu
-        'manage_options',      // Capacité
-        'design_pattern_w3c',  // Slug de la page
-        ''                     // Pas de fonction de rappel pour la page principale
-    );
-
-    add_submenu_page(
-        'design_pattern_w3c',       // Slug du menu parent
-        'Liens',                    // Titre de la page
-        'Liens',       // Titre du menu (remplace le nom de la sous-page automatique)
-        'manage_options',           // Capacité
-        'design_pattern_w3c',       // Slug de la sous-page (doit être le même que le slug de la page parente)
-        'custom_link_links_page'    // Fonction pour afficher le contenu de la sous-page "Liens"
-    );
-
-
-    // Vous pouvez ajouter d'autres sous-pages ici, comme "Carrousel"
-    add_submenu_page(
-        'design_pattern_w3c',   // Slug du menu parent
-        'Carrousel',            // Titre de la page
-        'Carrousel',            // Titre du menu
-        'manage_options',       // Capacité
-        'custom_carrousel',     // Slug de la sous-page
-        'custom_link_carrousel_page' // Fonction pour afficher le contenu de la sous-page "Carrousel"
-    );
-}
-add_action('admin_menu', 'custom_link_admin_menu');
-
-//Fonction pour afficher le contenu de la page d'administration:
+// Fonction pour afficher le contenu de la page d'administration des liens
 function custom_link_links_page()
 {
     global $wpdb;
     $table_name = $wpdb->prefix . 'custom_links';
 
-    // Traiter le formulaire s'il a été soumis
+    // Traiter le formulaire s'il a été soumis pour ajouter, mettre à jour ou supprimer des liens
     if (isset($_POST['submit'])) {
         $url = sanitize_text_field($_POST['url']);
         $text = stripslashes(sanitize_text_field($_POST['text']));
@@ -109,7 +84,6 @@ function custom_link_links_page()
         echo '<div class="notice notice-success"><p>Lien ajouté avec succès! Voici votre shortcode: </p>';
         echo '<code>[custom_link id="' . $inserted_id . '"]</code></div>'; // Affiche le shortcode
     }
-
 
     // Formulaire pour ajouter un lien
     echo '<div class="wrap">
@@ -133,7 +107,6 @@ function custom_link_links_page()
         <input type="submit" name="submit" class="button button-primary" value="Ajouter le lien">
     </form>
 </div>';
-
 
     // Liste des liens existants
     $links = $wpdb->get_results("SELECT id, text, design_pattern FROM $table_name ORDER BY id DESC");
@@ -191,7 +164,6 @@ function custom_link_links_page()
         echo '<div class="notice notice-success"><p>Lien mis à jour avec succès!</p></div>';
     }
 
-
     // Si un lien a été sélectionné pour modification, affichez le formulaire de modification
     if (isset($_POST['edit_link'])) {
         $id_to_edit = intval($_POST['edit_link']);
@@ -221,9 +193,12 @@ function custom_link_links_page()
     }
 }
 
-//Fonction pour copier le shortcode 
+// Fonction pour copier le shortcode 
+// Ajout d'un script JavaScript pour copier le shortcode dans le presse-papiers
+
 function custom_link_enqueue_copy_script()
 {
+    // Vérifier si la page d'administration est celle du plugin, puis inclure le script JS
     if (isset($_GET['page']) && $_GET['page'] === 'design_pattern_w3c') {
         echo '<script>
             document.addEventListener("DOMContentLoaded", function() {
