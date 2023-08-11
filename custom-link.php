@@ -41,7 +41,7 @@ function custom_link_create_table()
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
 }
-register_activation_hook(__FILE__, 'custom_link_create_table');
+register_activation_hook(plugin_dir_path(__FILE__) . 'home-extension.php', 'custom_link_create_table');
 
 // Fonction pour créer un shortcode permettant d'afficher un lien
 function custom_link_shortcode($atts)
