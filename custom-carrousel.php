@@ -20,26 +20,34 @@ function custom_carrousel_enqueue_scripts()
 add_action('wp_enqueue_scripts', 'custom_carrousel_enqueue_scripts');
 
 
-// Créer une table dans la base de données lors de l'activation du plugin
+// Créer les tables lors de l'activation du plugin
 function custom_carrousel_create_table()
 {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'custom_carrousel';
     $charset_collate = $wpdb->get_charset_collate();
 
-    // Instruction SQL pour créer la table
-    $sql = "CREATE TABLE $table_name (
-         id mediumint(9) NOT NULL AUTO_INCREMENT,
-         image_url varchar(255) NOT NULL,
-         title varchar(255) NOT NULL,
-         description text NOT NULL,
-         link_url varchar(255) NOT NULL,
-         UNIQUE KEY id (id)
-     ) $charset_collate;";
+    // Table pour les carrousels
+    $sql_carrousel = "CREATE TABLE {$wpdb->prefix}custom_carrousels (
+        carrousel_id mediumint(9) NOT NULL AUTO_INCREMENT,
+        name varchar(255) NOT NULL,
+        UNIQUE KEY carrousel_id (carrousel_id)
+    ) $charset_collate;";
 
-    // Inclure le fichier upgrade.php et exécuter dbDelta pour créer la table
+    // Table pour les slides
+    $sql_slides = "CREATE TABLE {$wpdb->prefix}custom_carrousel_slides (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        carrousel_id mediumint(9) NOT NULL,
+        image_url varchar(255) NOT NULL,
+        title varchar(255) NOT NULL,
+        description text NOT NULL,
+        link_url varchar(255) NOT NULL,
+        UNIQUE KEY id (id),
+        FOREIGN KEY (carrousel_id) REFERENCES {$wpdb->prefix}custom_carrousels(carrousel_id)
+    ) $charset_collate;";
+
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta($sql);
+    dbDelta($sql_carrousel);
+    dbDelta($sql_slides);
 }
 
 register_activation_hook(plugin_dir_path(__FILE__) . 'home-extension.php', 'custom_carrousel_create_table');
@@ -48,9 +56,10 @@ register_activation_hook(plugin_dir_path(__FILE__) . 'home-extension.php', 'cust
 function custom_carrousel_shortcode($atts)
 {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'custom_carrousel';
+    $table_name = $wpdb->prefix . 'custom_carrousel_slides';
 
-    // Récupérer toutes les entrées de la table custom_carrousel
+    // Récupérer toutes les entrées de la table custom_carrousel_slides
+    // (Vous pourriez aussi ajouter une clause WHERE pour filtrer les slides d'un carrousel spécifique)
     $items = $wpdb->get_results("SELECT * FROM $table_name");
 
     if (!$items) return 'Aucun élément de carrousel trouvé.';
@@ -112,64 +121,114 @@ function custom_carrousel_shortcode($atts)
 
 add_shortcode('custom_carrousel', 'custom_carrousel_shortcode');
 
+// Partie ajoutée: fonction pour créer un carrousel
+function custom_carrousel_create()
+{
+    global $wpdb;
+    $carrousel_table = $wpdb->prefix . 'custom_carrousels';
+
+    if (isset($_POST['create_carrousel'])) {
+        $carrousel_name = sanitize_text_field($_POST['carrousel_name']);
+        $wpdb->insert($carrousel_table, array('name' => $carrousel_name), array('%s'));
+        echo '<div class="notice notice-success"><p>Carrousel créé avec succès!</p></div>';
+    }
+}
+
 // Fonction pour afficher le contenu de la page d'administration du carrousel
 function custom_link_carrousel_page()
 {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'custom_carrousel';
+    $carrousel_table_name = $wpdb->prefix . 'custom_carrousels';
+    $slides_table_name = $wpdb->prefix . 'custom_carrousel_slides';
+    $carrousel_id = null;
 
-    // Traiter le formulaire si les données sont envoyées
-    if (isset($_POST['submit'])) {
+    // Traiter le formulaire du nom du carrousel si les données sont envoyées
+    if (isset($_POST['submit_carrousel_name'])) {
+        $carrousel_name = sanitize_text_field($_POST['carrousel_name']);
+
+        // Insérer le nom dans la base de données
+        $wpdb->insert(
+            $carrousel_table_name,
+            array('name' => $carrousel_name),
+            array('%s')
+        );
+
+        $carrousel_id = $wpdb->insert_id; // Récupère l'ID du carrousel nouvellement inséré
+    }
+
+    // Traiter le formulaire du slide si les données sont envoyées
+    if (isset($_POST['submit_slide'])) {
         $image_url = sanitize_text_field($_POST['image_url']);
         $title = sanitize_text_field($_POST['title']);
         $description = sanitize_text_field($_POST['description']);
         $link_url = sanitize_text_field($_POST['link_url']);
+        $carrousel_id = intval($_POST['carrousel_id']);
 
-        // Insérer ou mettre à jour dans la base de données
+        // Insérer les données du slide dans la base de données
         $wpdb->insert(
-            $table_name,
+            $slides_table_name,
             array(
+                'carrousel_id' => $carrousel_id,
                 'image_url' => $image_url,
                 'title' => $title,
                 'description' => $description,
-                'link_url' => $link_url,
+                'link_url' => $link_url
             ),
-            array('%s', '%s', '%s', '%s')
+            array('%d', '%s', '%s', '%s', '%s')
         );
 
-        $inserted_id = $wpdb->insert_id; // Récupère l'ID de la ligne nouvellement insérée
-
-        echo '<div class="notice notice-success"><p>Lien ajouté avec succès! Voici votre shortcode: </p>';
-        echo '<code>[custom_carrousel id="' . $inserted_id . '"]</code></div>'; // Affiche le shortcode
+        echo '<div class="notice notice-success"><p>Slide ajouté avec succès!</p></div>';
     }
 
-    // Afficher le formulaire
+    if ($carrousel_id) {
+        // Si le nom du carrousel est défini, afficher le formulaire du slide
 ?>
-    <div class="wrap">
-        <h2>Ajouter un élément de carrousel</h2>
-        <form method="post" action="">
-            <table class="form-table">
-                <tr>
-                    <th scope="row"><label for="image_url">URL de l'image</label></th>
-                    <td><input type="text" name="image_url" id="image_url" class="regular-text" required></td>
-                </tr>
-                <tr>
-                    <th scope="row"><label for="title">Titre</label></th>
-                    <td><input type="text" name="title" id="title" class="regular-text" required></td>
-                </tr>
-                <tr>
-                    <th scope="row"><label for="description">Description</label></th>
-                    <td><textarea name="description" id="description" class="regular-text" required></textarea></td>
-                </tr>
-                <tr>
-                    <th scope="row"><label for="link_url">URL du lien</label></th>
-                    <td><input type="text" name="link_url" id="link_url" class="regular-text" required></td>
-                </tr>
-            </table>
-            <p class="submit">
-                <input type="submit" name="submit" id="submit" class="button button-primary" value="Ajouter">
-            </p>
-        </form>
-    </div>
+        <div class="wrap">
+            <h2>Ajouter un élément de carrousel</h2>
+            <form method="post" action="">
+                <input type="hidden" name="carrousel_id" value="<?php echo $carrousel_id; ?>">
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><label for="image_url">URL de l'image</label></th>
+                        <td><input type="text" name="image_url" id="image_url" class="regular-text" required></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="title">Titre</label></th>
+                        <td><input type="text" name="title" id="title" class="regular-text" required></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="description">Description</label></th>
+                        <td><textarea name="description" id="description" class="regular-text" required></textarea></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="link_url">URL du lien</label></th>
+                        <td><input type="text" name="link_url" id="link_url" class="regular-text" required></td>
+                    </tr>
+                </table>
+                <p class="submit">
+                    <input type="submit" name="submit_slide" id="submit_slide" class="button button-primary" value="Ajouter">
+                </p>
+            </form>
+        </div>
 <?php
+    } else {
+        // Sinon, afficher le formulaire du nom du carrousel
+?>
+        <div class="wrap">
+            <h2>Créer un nouveau carrousel</h2>
+            <form method="post" action="">
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><label for="carrousel_name">Nom du carrousel</label></th>
+                        <td><input type="text" name="carrousel_name" id="carrousel_name" class="regular-text" required></td>
+                    </tr>
+                </table>
+                <p class="submit">
+                    <input type="submit" name="submit_carrousel_name" id="submit_carrousel_name" class="button button-primary" value="Créer">
+                </p>
+            </form>
+        </div>
+<?php
+    }
 }
+
