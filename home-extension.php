@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name: Custom Link Design Pattern
+ * Plugin Name: Custom Design Pattern
  * Description: Une extension pour créer des liens personnalisés avec des design patterns.
  * Version: 1.0
  * Author: Tamara VIOLEAU
@@ -42,6 +42,9 @@ function custom_link_admin_menu()
         'custom_carrousel',     // Slug de la sous-page
         'custom_link_carrousel_page' // Fonction pour afficher le contenu de la sous-page "Carrousel"
     );
+
+
+    
 }
 add_action('admin_menu', 'custom_link_admin_menu');
 

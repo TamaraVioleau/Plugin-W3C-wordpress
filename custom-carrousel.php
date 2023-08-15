@@ -58,9 +58,14 @@ function custom_carrousel_shortcode($atts)
     global $wpdb;
     $table_name = $wpdb->prefix . 'custom_carrousel_slides';
 
-    // Récupérer toutes les entrées de la table custom_carrousel_slides
-    // (Vous pourriez aussi ajouter une clause WHERE pour filtrer les slides d'un carrousel spécifique)
-    $items = $wpdb->get_results("SELECT * FROM $table_name");
+ // Récupérer l'ID du carrousel depuis les attributs du shortcode
+ $atts = shortcode_atts( array('id' => 0), $atts, 'custom_carrousel' );
+ $carrousel_id = intval($atts['id']);
+
+ if (!$carrousel_id) return 'ID de carrousel non spécifié ou invalide.';
+
+ // Récupérer toutes les entrées de la table custom_carrousel_slides filtrées par l'ID du carrousel
+ $items = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name WHERE carrousel_id = %d", $carrousel_id));
 
     if (!$items) return 'Aucun élément de carrousel trouvé.';
 
@@ -130,8 +135,10 @@ function custom_carrousel_create()
     if (isset($_POST['create_carrousel'])) {
         $carrousel_name = sanitize_text_field($_POST['carrousel_name']);
         $wpdb->insert($carrousel_table, array('name' => $carrousel_name), array('%s'));
-        echo '<div class="notice notice-success"><p>Carrousel créé avec succès!</p></div>';
-    }
+        add_action('admin_notices', function() {
+            echo '<div class="notice notice-success"><p>Carrousel créé avec succès!</p></div>';
+        });
+            }
 }
 
 // Fonction pour afficher le contenu de la page d'administration du carrousel
@@ -145,16 +152,20 @@ function custom_link_carrousel_page()
     // Traiter le formulaire du nom du carrousel si les données sont envoyées
     if (isset($_POST['submit_carrousel_name'])) {
         $carrousel_name = sanitize_text_field($_POST['carrousel_name']);
-
+    
         // Insérer le nom dans la base de données
         $wpdb->insert(
             $carrousel_table_name,
             array('name' => $carrousel_name),
             array('%s')
         );
-
+    
         $carrousel_id = $wpdb->insert_id; // Récupère l'ID du carrousel nouvellement inséré
+    
+        echo '<div class="notice notice-success"><p>Carrousel créé avec succès! Voici votre shortcode: </p>';
+        echo '<code>[custom_carrousel id="' . $carrousel_id . '"]</code></div>'; // Affiche le shortcode
     }
+    
 
     // Traiter le formulaire du slide si les données sont envoyées
     if (isset($_POST['submit_slide'])) {
@@ -190,7 +201,7 @@ function custom_link_carrousel_page()
                 <table class="form-table">
                     <tr>
                         <th scope="row"><label for="image_url">URL de l'image</label></th>
-                        <td><input type="text" name="image_url" id="image_url" class="regular-text" required></td>
+                        <td><input type="text" name="image_url" id="image_url" class="regular-text"></td>
                     </tr>
                     <tr>
                         <th scope="row"><label for="title">Titre</label></th>
@@ -232,3 +243,67 @@ function custom_link_carrousel_page()
     }
 }
 
+// Afficher la liste des slides pour chaque carrousel
+function custom_carrousel_list_page() {
+    global $wpdb;
+    $slides_table_name = $wpdb->prefix . 'custom_carrousel_slides';
+    $carrousel_table_name = $wpdb->prefix . 'custom_carrousels';
+
+    // Traitement de la suppression
+    if (isset($_GET['delete_slide']) && isset($_GET['slide_id'])) {
+        $slide_id = intval($_GET['slide_id']);
+        $wpdb->delete($slides_table_name, array('id' => $slide_id));
+        echo '<div class="notice notice-success"><p>Slide supprimé avec succès!</p></div>';
+    }
+
+    // Récupérer tous les carrousels
+    $carrousels = $wpdb->get_results("SELECT * FROM $carrousel_table_name");
+
+    foreach ($carrousels as $carrousel) {
+        echo '<h2>Slides pour le carrousel: ' . esc_html($carrousel->name) . '</h2>';
+        // Récupérer les slides pour ce carrousel
+        $slides = $wpdb->get_results($wpdb->prepare("SELECT * FROM $slides_table_name WHERE carrousel_id = %d", $carrousel->carrousel_id));
+
+        echo '<table class="wp-list-table widefat fixed striped table-view-list">';
+        echo '<thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Image URL</th>
+                    <th>Titre</th>
+                    <th>Description</th>
+                    <th>URL du lien</th>
+                    <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>';
+        
+        foreach ($slides as $slide) {
+            echo '<tr>
+                    <td>' . esc_html($slide->id) . '</td>
+                    <td><img src="' . esc_url($slide->image_url) . '" width="50"></td>
+                    <td>' . esc_html($slide->title) . '</td>
+                    <td>' . esc_html($slide->description) . '</td>
+                    <td>' . esc_url($slide->link_url) . '</td>
+                    <td>
+                        <a href="?page=custom_carrousel_list_page&delete_slide=true&slide_id=' . intval($slide->id) . '" onclick="return confirm(\'Êtes-vous sûr de vouloir supprimer cette slide?\')">Supprimer</a>
+                    </td>
+                  </tr>';
+        }
+
+        echo '</tbody></table><br>';
+    }
+}
+
+// Ajouter une page dans la zone d'administration pour afficher les slides
+function custom_carrousel_admin_menu() {
+    add_menu_page(
+        'Gérer les Carrousels', 
+        'Gérer les Carrousels', 
+        'manage_options', 
+        'custom_carrousel_list_page', 
+        'custom_carrousel_list_page', 
+        'dashicons-slides'
+    );
+}
+
+add_action('admin_menu', 'custom_carrousel_admin_menu');
