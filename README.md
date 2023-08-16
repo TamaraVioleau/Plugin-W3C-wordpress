@@ -1,6 +1,8 @@
 # Custom Design Pattern
 
-L'extension WordPress "Custom Design Pattern" est créée par Tamara VIOLEAU. Elle permet de gérer des liens personnalisés avec des designs différents.
+L'extension WordPress "Custom Design Pattern" est créée par Tamara VIOLEAU. 
+Elle s'appuie sur les design pattern présent sur le site W3C.
+Elle permet de gérer des liens personnalisés avec des designs différents.
 
 ## Fonctionnalités
 
