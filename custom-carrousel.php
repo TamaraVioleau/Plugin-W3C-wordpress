@@ -1,39 +1,34 @@
 <?php
-function custom_carrousel_admin_enqueue_scripts()
-{
-    wp_enqueue_style('custom-carrousel-admin-styles', plugin_dir_url(__FILE__) . 'css/style-admin.css');
+// Inclure les fichiers CSS/JS
+function custom_carrousel_enqueue_assets() {
+    // Pour l'admin
+    if (is_admin()) {
+        wp_enqueue_style('custom-carrousel-admin-styles', plugin_dir_url(__FILE__) . 'css/style-admin.css');
+    } 
+    // Pour le front-end
+    else {
+        wp_enqueue_style('custom-carrousel-styles', plugin_dir_url(__FILE__) . 'css/styles.css');
+        wp_enqueue_script('custom-carrousel-scripts', plugin_dir_url(__FILE__) . 'js/script-carrousel.js', array(), '1.0', true);
+    }
 }
-add_action('admin_enqueue_scripts', 'custom_carrousel_admin_enqueue_scripts');
-
-// Chargement du fichier CSS pour le front-end du site
-function custom_carrousel_enqueue_styles()
-{
-    wp_enqueue_style('custom-carrousel-styles', plugin_dir_url(__FILE__) . 'css/styles.css');
-}
-add_action('wp_enqueue_scripts', 'custom_carrousel_enqueue_styles');
-
-// Chargement du fichier JavaScript pour le front-end du site
-function custom_carrousel_enqueue_scripts()
-{
-    wp_enqueue_script('custom-carrousel-scripts', plugin_dir_url(__FILE__) . 'js/script-carrousel.js', array(), '1.0', true);
-}
-add_action('wp_enqueue_scripts', 'custom_carrousel_enqueue_scripts');
+add_action('admin_enqueue_scripts', 'custom_carrousel_enqueue_assets');
+add_action('wp_enqueue_scripts', 'custom_carrousel_enqueue_assets');
 
 
-// Créer les tables lors de l'activation du plugin
+// Création des tables lors de l'activation du plugin
 function custom_carrousel_create_table()
 {
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
 
-    // Table pour les carrousels
+// Structure SQL pour créer la table des carrousels
     $sql_carrousel = "CREATE TABLE {$wpdb->prefix}custom_carrousels (
         carrousel_id mediumint(9) NOT NULL AUTO_INCREMENT,
         name varchar(255) NOT NULL,
         UNIQUE KEY carrousel_id (carrousel_id)
     ) $charset_collate;";
 
-    // Table pour les slides
+    // Structure SQL pour créer la table des slides
     $sql_slides = "CREATE TABLE {$wpdb->prefix}custom_carrousel_slides (
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         carrousel_id mediumint(9) NOT NULL,
@@ -52,17 +47,16 @@ function custom_carrousel_create_table()
 
 register_activation_hook(plugin_dir_path(__FILE__) . 'home-extension.php', 'custom_carrousel_create_table');
 
-// Fonction pour créer un shortcode permettant d'afficher le carrousel
-function custom_carrousel_shortcode($atts)
-{
+// Shortcode pour afficher un carrousel spécifique
+function custom_carrousel_shortcode($atts) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'custom_carrousel_slides';
 
- // Récupérer l'ID du carrousel depuis les attributs du shortcode
- $atts = shortcode_atts( array('id' => 0), $atts, 'custom_carrousel' );
- $carrousel_id = intval($atts['id']);
+    $atts = shortcode_atts(array('id' => 0), $atts, 'custom_carrousel');
+    $carrousel_id = intval($atts['id']);
 
- if (!$carrousel_id) return 'ID de carrousel non spécifié ou invalide.';
+    if (empty($carrousel_id)) return 'ID de carrousel non spécifié ou invalide.';
+
 
  // Récupérer toutes les entrées de la table custom_carrousel_slides filtrées par l'ID du carrousel
  $items = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name WHERE carrousel_id = %d", $carrousel_id));
@@ -74,15 +68,9 @@ function custom_carrousel_shortcode($atts)
     $count = 1;
 
     foreach ($items as $item) {
-        $selected = $count === 1 ? 'aria-selected="true"' : 'aria-selected="false"';
         $active = $count === 1 ? 'active' : '';
-        $carousel_tabs .= '<button id="carousel-tab-' . $carrousel_id . '.' . $count . '" type="button" ... aria-controls="carousel-item-' . $carrousel_id . '.' . $count . '" ...';
 
-        $carousel_items .= '<div class="carousel-item ' . $active . '" id="carousel-item-' . $carrousel_id . '.' . $count . '" ...';
-
-        $count++;
-
-        $carousel_tabs .= '<button id="carousel-tab-' . $count . '" type="button" role="tab" tabindex="-1" aria-label="Slide ' . $count . '" ' . $selected . ' aria-controls="carousel-item-' . $count . '">
+        $carousel_tabs .= '<button id="carousel-tab-' . $carrousel_id . '.' . $count . '" type="button" role="tab" tabindex="-1" aria-label="Slide ' . $count . '">
             <svg width="34" height="34" version="1.1" xmlns="http://www.w3.org/2000/svg">
               <circle class="border" cx="16" cy="15" r="10"></circle>
               <circle class="tab-background" cx="16" cy="15" r="8"></circle>
@@ -90,20 +78,17 @@ function custom_carrousel_shortcode($atts)
             </svg>
           </button>';
 
-        $carousel_items .= '<div class="carousel-item ' . $active . '" id="carousel-item-' . $count . '" role="tabpanel" aria-roledescription="slide" aria-label="' . $count . ' of ' . count($items) . '">
-        <div class="carousel-image">
-        <a href="' . esc_url($item->link_url) . '" id="carousel-image-' . $item->id . '">
-        <img src="' . esc_url($item->image_url) . '" alt="' . esc_attr($item->title) . '">
-          </a>
-        </div>
-        <div class="carousel-caption">
-          <h3>
-            <a href="' . esc_url($item->link_url) . '"> ' . esc_html($item->title) . ' </a>
-          </h3>
-          <div>
-            <p><span class="contrast">' . esc_html($item->description) . '</span></p>
-          </div>
-        </div></div>';
+        $carousel_items .= '<div class="carousel-item ' . $active . '" id="carousel-item-' . $carrousel_id . '.' . $count . '" role="tabpanel" aria-roledescription="slide" aria-label="' . $count . ' of ' . count($items) . '">
+            <div class="carousel-image">
+                <a href="' . esc_url($item->link_url) . '" id="carousel-image-' . $item->id . '">
+                    <img src="' . esc_url($item->image_url) . '" alt="' . esc_attr($item->title) . '">
+                </a>
+            </div>
+            <div class="carousel-caption">
+                <h3><a href="' . esc_url($item->link_url) . '"> ' . esc_html($item->title) . ' </a></h3>
+                <div><p><span class="contrast">' . esc_html($item->description) . '</span></p></div>
+            </div>
+        </div>';
 
         $count++;
     }
@@ -129,26 +114,11 @@ function custom_carrousel_shortcode($atts)
       </section><div class="col-sm-1"></div>';
 }
 
+// Enregistrer le shortcode pour utilisation dans les contenus
 add_shortcode('custom_carrousel', 'custom_carrousel_shortcode');
 
-// Partie ajoutée: fonction pour créer un carrousel
-function custom_carrousel_create()
-{
-    global $wpdb;
-    $carrousel_table = $wpdb->prefix . 'custom_carrousels';
-
-    if (isset($_POST['create_carrousel'])) {
-        $carrousel_name = sanitize_text_field($_POST['carrousel_name']);
-        $wpdb->insert($carrousel_table, array('name' => $carrousel_name), array('%s'));
-        add_action('admin_notices', function() {
-            echo '<div class="notice notice-success"><p>Carrousel créé avec succès!</p></div>';
-        });
-            }
-}
-
-// Fonction pour afficher le contenu de la page d'administration du carrousel
-function custom_link_carrousel_page()
-{
+// Fonction pour créer un carrousel dans la base de données et pour afficher son shortcode dans la page admin
+function custom_link_carrousel_page() {
     global $wpdb;
     $carrousel_table_name = $wpdb->prefix . 'custom_carrousels';
     $slides_table_name = $wpdb->prefix . 'custom_carrousel_slides';
@@ -157,22 +127,20 @@ function custom_link_carrousel_page()
     // Traiter le formulaire du nom du carrousel si les données sont envoyées
     if (isset($_POST['submit_carrousel_name'])) {
         $carrousel_name = sanitize_text_field($_POST['carrousel_name']);
-    
-        // Insérer le nom dans la base de données
+
         $wpdb->insert(
             $carrousel_table_name,
             array('name' => $carrousel_name),
             array('%s')
         );
-    
-        $carrousel_id = $wpdb->insert_id; // Récupère l'ID du carrousel nouvellement inséré
-    
+
+        $carrousel_id = $wpdb->insert_id;
+
         echo '<div class="notice notice-success"><p>Carrousel créé avec succès! Voici votre shortcode: </p>';
         echo '<code>[custom_carrousel id="' . $carrousel_id . '"]</code></div>'; // Affiche le shortcode
     }
     
-
-    // Traiter le formulaire du slide si les données sont envoyées
+    // Traiter le formulaire du slide si les données sont envoyées (cette partie reste inchangée)
     if (isset($_POST['submit_slide'])) {
         $image_url = sanitize_text_field($_POST['image_url']);
         $title = sanitize_text_field($_POST['title']);
@@ -196,8 +164,9 @@ function custom_link_carrousel_page()
         echo '<div class="notice notice-success"><p>Slide ajouté avec succès!</p></div>';
     }
 
+    // Afficher le formulaire approprié (slide ou carrousel) en fonction du contexte       
+     // Si le nom du carrousel est défini, afficher le formulaire du slide
     if ($carrousel_id) {
-        // Si le nom du carrousel est défini, afficher le formulaire du slide
 ?>
         <div class="wrap">
             <h2>Ajouter un élément de carrousel</h2>
@@ -227,8 +196,8 @@ function custom_link_carrousel_page()
             </form>
         </div>
 <?php
-    } else {
-        // Sinon, afficher le formulaire du nom du carrousel
+    } // Sinon, afficher le formulaire du nom du carrousel
+    else {
 ?>
         <div class="wrap">
             <h2>Créer un nouveau carrousel</h2>
