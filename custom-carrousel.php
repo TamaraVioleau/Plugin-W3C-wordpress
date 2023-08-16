@@ -76,6 +76,11 @@ function custom_carrousel_shortcode($atts)
     foreach ($items as $item) {
         $selected = $count === 1 ? 'aria-selected="true"' : 'aria-selected="false"';
         $active = $count === 1 ? 'active' : '';
+        $carousel_tabs .= '<button id="carousel-tab-' . $carrousel_id . '.' . $count . '" type="button" ... aria-controls="carousel-item-' . $carrousel_id . '.' . $count . '" ...';
+
+        $carousel_items .= '<div class="carousel-item ' . $active . '" id="carousel-item-' . $carrousel_id . '.' . $count . '" ...';
+
+        $count++;
 
         $carousel_tabs .= '<button id="carousel-tab-' . $count . '" type="button" role="tab" tabindex="-1" aria-label="Slide ' . $count . '" ' . $selected . ' aria-controls="carousel-item-' . $count . '">
             <svg width="34" height="34" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -87,8 +92,8 @@ function custom_carrousel_shortcode($atts)
 
         $carousel_items .= '<div class="carousel-item ' . $active . '" id="carousel-item-' . $count . '" role="tabpanel" aria-roledescription="slide" aria-label="' . $count . ' of ' . count($items) . '">
         <div class="carousel-image">
-          <a href="' . esc_url($item->link_url) . '" id="carousel-image-' . $count . '">
-            <img src="' . esc_url($item->image_url) . '" alt="' . esc_attr($item->title) . '">
+        <a href="' . esc_url($item->link_url) . '" id="carousel-image-' . $item->id . '">
+        <img src="' . esc_url($item->image_url) . '" alt="' . esc_attr($item->title) . '">
           </a>
         </div>
         <div class="carousel-caption">
@@ -243,67 +248,3 @@ function custom_link_carrousel_page()
     }
 }
 
-// Afficher la liste des slides pour chaque carrousel
-function custom_carrousel_list_page() {
-    global $wpdb;
-    $slides_table_name = $wpdb->prefix . 'custom_carrousel_slides';
-    $carrousel_table_name = $wpdb->prefix . 'custom_carrousels';
-
-    // Traitement de la suppression
-    if (isset($_GET['delete_slide']) && isset($_GET['slide_id'])) {
-        $slide_id = intval($_GET['slide_id']);
-        $wpdb->delete($slides_table_name, array('id' => $slide_id));
-        echo '<div class="notice notice-success"><p>Slide supprimé avec succès!</p></div>';
-    }
-
-    // Récupérer tous les carrousels
-    $carrousels = $wpdb->get_results("SELECT * FROM $carrousel_table_name");
-
-    foreach ($carrousels as $carrousel) {
-        echo '<h2>Slides pour le carrousel: ' . esc_html($carrousel->name) . '</h2>';
-        // Récupérer les slides pour ce carrousel
-        $slides = $wpdb->get_results($wpdb->prepare("SELECT * FROM $slides_table_name WHERE carrousel_id = %d", $carrousel->carrousel_id));
-
-        echo '<table class="wp-list-table widefat fixed striped table-view-list">';
-        echo '<thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Image URL</th>
-                    <th>Titre</th>
-                    <th>Description</th>
-                    <th>URL du lien</th>
-                    <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>';
-        
-        foreach ($slides as $slide) {
-            echo '<tr>
-                    <td>' . esc_html($slide->id) . '</td>
-                    <td><img src="' . esc_url($slide->image_url) . '" width="50"></td>
-                    <td>' . esc_html($slide->title) . '</td>
-                    <td>' . esc_html($slide->description) . '</td>
-                    <td>' . esc_url($slide->link_url) . '</td>
-                    <td>
-                        <a href="?page=custom_carrousel_list_page&delete_slide=true&slide_id=' . intval($slide->id) . '" onclick="return confirm(\'Êtes-vous sûr de vouloir supprimer cette slide?\')">Supprimer</a>
-                    </td>
-                  </tr>';
-        }
-
-        echo '</tbody></table><br>';
-    }
-}
-
-// Ajouter une page dans la zone d'administration pour afficher les slides
-function custom_carrousel_admin_menu() {
-    add_menu_page(
-        'Gérer les Carrousels', 
-        'Gérer les Carrousels', 
-        'manage_options', 
-        'custom_carrousel_list_page', 
-        'custom_carrousel_list_page', 
-        'dashicons-slides'
-    );
-}
-
-add_action('admin_menu', 'custom_carrousel_admin_menu');
