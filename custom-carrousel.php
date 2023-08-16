@@ -48,16 +48,15 @@ function custom_carrousel_create_table()
 register_activation_hook(plugin_dir_path(__FILE__) . 'home-extension.php', 'custom_carrousel_create_table');
 
 // Shortcode pour afficher un carrousel spécifique
-function custom_carrousel_shortcode($atts)
-{
+function custom_carrousel_shortcode($atts) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'custom_carrousel_slides';
 
- // Récupérer l'ID du carrousel depuis les attributs du shortcode
- $atts = shortcode_atts( array('id' => 0), $atts, 'custom_carrousel' );
- $carrousel_id = intval($atts['id']);
+    $atts = shortcode_atts(array('id' => 0), $atts, 'custom_carrousel');
+    $carrousel_id = intval($atts['id']);
 
- if (!$carrousel_id) return 'ID de carrousel non spécifié ou invalide.';
+    if (empty($carrousel_id)) return 'ID de carrousel non spécifié ou invalide.';
+
 
  // Récupérer toutes les entrées de la table custom_carrousel_slides filtrées par l'ID du carrousel
  $items = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name WHERE carrousel_id = %d", $carrousel_id));
@@ -69,15 +68,9 @@ function custom_carrousel_shortcode($atts)
     $count = 1;
 
     foreach ($items as $item) {
-        $selected = $count === 1 ? 'aria-selected="true"' : 'aria-selected="false"';
         $active = $count === 1 ? 'active' : '';
-        $carousel_tabs .= '<button id="carousel-tab-' . $carrousel_id . '.' . $count . '" type="button" ... aria-controls="carousel-item-' . $carrousel_id . '.' . $count . '" ...';
 
-        $carousel_items .= '<div class="carousel-item ' . $active . '" id="carousel-item-' . $carrousel_id . '.' . $count . '" ...';
-
-        $count++;
-
-        $carousel_tabs .= '<button id="carousel-tab-' . $count . '" type="button" role="tab" tabindex="-1" aria-label="Slide ' . $count . '" ' . $selected . ' aria-controls="carousel-item-' . $count . '">
+        $carousel_tabs .= '<button id="carousel-tab-' . $carrousel_id . '.' . $count . '" type="button" role="tab" tabindex="-1" aria-label="Slide ' . $count . '">
             <svg width="34" height="34" version="1.1" xmlns="http://www.w3.org/2000/svg">
               <circle class="border" cx="16" cy="15" r="10"></circle>
               <circle class="tab-background" cx="16" cy="15" r="8"></circle>
@@ -85,20 +78,17 @@ function custom_carrousel_shortcode($atts)
             </svg>
           </button>';
 
-        $carousel_items .= '<div class="carousel-item ' . $active . '" id="carousel-item-' . $count . '" role="tabpanel" aria-roledescription="slide" aria-label="' . $count . ' of ' . count($items) . '">
-        <div class="carousel-image">
-        <a href="' . esc_url($item->link_url) . '" id="carousel-image-' . $item->id . '">
-        <img src="' . esc_url($item->image_url) . '" alt="' . esc_attr($item->title) . '">
-          </a>
-        </div>
-        <div class="carousel-caption">
-          <h3>
-            <a href="' . esc_url($item->link_url) . '"> ' . esc_html($item->title) . ' </a>
-          </h3>
-          <div>
-            <p><span class="contrast">' . esc_html($item->description) . '</span></p>
-          </div>
-        </div></div>';
+        $carousel_items .= '<div class="carousel-item ' . $active . '" id="carousel-item-' . $carrousel_id . '.' . $count . '" role="tabpanel" aria-roledescription="slide" aria-label="' . $count . ' of ' . count($items) . '">
+            <div class="carousel-image">
+                <a href="' . esc_url($item->link_url) . '" id="carousel-image-' . $item->id . '">
+                    <img src="' . esc_url($item->image_url) . '" alt="' . esc_attr($item->title) . '">
+                </a>
+            </div>
+            <div class="carousel-caption">
+                <h3><a href="' . esc_url($item->link_url) . '"> ' . esc_html($item->title) . ' </a></h3>
+                <div><p><span class="contrast">' . esc_html($item->description) . '</span></p></div>
+            </div>
+        </div>';
 
         $count++;
     }
