@@ -136,7 +136,7 @@ function custom_link_carrousel_page() {
 
         $carrousel_id = $wpdb->insert_id;
 
-        echo '<div class="notice notice-success"><p>Carrousel créé avec succès! Voici votre shortcode: </p>';
+        echo '<div class="notice notice-success"><p>Carrousel créé avec succès ! Voici votre shortcode: </p>';
         echo '<code>[custom_carrousel id="' . $carrousel_id . '"]</code></div>'; // Affiche le shortcode
     }
     
