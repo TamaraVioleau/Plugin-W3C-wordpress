@@ -17,7 +17,7 @@ add_action('wp_enqueue_scripts', 'custom_link_enqueue_styles');
 // Chargement du fichier JavaScript pour le front-end du site
 function custom_link_enqueue_scripts()
 {
-    wp_enqueue_script('custom-link-scripts', plugin_dir_url(__FILE__) . 'js/scripts.js', array(), '1.0', true);
+    wp_enqueue_script('custom-link-scripts', plugin_dir_url(__FILE__) . 'js/script-links.js', array(), '1.0', true);
 }
 add_action('wp_enqueue_scripts', 'custom_link_enqueue_scripts');
 
