@@ -5,7 +5,7 @@
  *
  */
 
-'use strict';
+"use strict";
 
 // takes options object: { accessibleCaptions: boolean, autoplay: boolean, playButton: boolean }
 // defaults are: { accessibleCaptions: true, autoplay: false, playButton: true }
@@ -18,7 +18,7 @@ var CarouselTablist = function (node, options) {
   );
 
   // a prefers-reduced-motion user setting must always override autoplay
-  var hasReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var hasReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   if (hasReducedMotion.matches) {
     options.paused = true;
   }
@@ -26,19 +26,19 @@ var CarouselTablist = function (node, options) {
   /* DOM properties */
   this.domNode = node;
 
-  this.tablistNode = node.querySelector('[role=tablist]');
-  this.containerNode = node.querySelector('.carousel-items');
+  this.tablistNode = node.querySelector("[role=tablist]");
+  this.containerNode = node.querySelector(".carousel-items");
 
   this.tabNodes = [];
   this.tabpanelNodes = [];
 
-  this.liveRegionNode = node.querySelector('.carousel-items');
-  this.pausePlayButtonNode = document.querySelector(
-    '.carousel-tablist .controls button.rotation'
+  this.liveRegionNode = node.querySelector(".carousel-items");
+  this.pausePlayButtonNode = this.domNode.querySelector(
+    ".controls button.rotation"
   );
 
-  this.playLabel = 'Start automatic slide show';
-  this.pauseLabel = 'Stop automatic slide show';
+  this.playLabel = "Start automatic slide show";
+  this.pauseLabel = "Stop automatic slide show";
 
   /* State properties */
   this.hasUserActivatedPlay = false; // set when the user activates the play/pause button
@@ -49,8 +49,8 @@ var CarouselTablist = function (node, options) {
   this.slideTimeout = null; // save reference to setTimeout
 
   // initialize tabs
-  this.tablistNode.addEventListener('focusin', this.handleTabFocus.bind(this));
-  this.tablistNode.addEventListener('focusout', this.handleTabBlur.bind(this));
+  this.tablistNode.addEventListener("focusin", this.handleTabFocus.bind(this));
+  this.tablistNode.addEventListener("focusout", this.handleTabBlur.bind(this));
 
   var nodes = node.querySelectorAll('[role="tab"]');
 
@@ -59,34 +59,34 @@ var CarouselTablist = function (node, options) {
 
     this.tabNodes.push(n);
 
-    n.addEventListener('keydown', this.handleTabKeydown.bind(this));
-    n.addEventListener('click', this.handleTabClick.bind(this));
+    n.addEventListener("keydown", this.handleTabKeydown.bind(this));
+    n.addEventListener("click", this.handleTabClick.bind(this));
 
     // initialize tabpanels
 
-    var tabpanelNode = document.getElementById(n.getAttribute('aria-controls'));
+    var tabpanelNode = document.getElementById(n.getAttribute("aria-controls"));
 
     if (tabpanelNode) {
       this.tabpanelNodes.push(tabpanelNode);
 
       // support stopping rotation when any element receives focus in the tabpanel
       tabpanelNode.addEventListener(
-        'focusin',
+        "focusin",
         this.handleTabpanelFocusIn.bind(this)
       );
       tabpanelNode.addEventListener(
-        'focusout',
+        "focusout",
         this.handleTabpanelFocusOut.bind(this)
       );
 
-      var imageLink = tabpanelNode.querySelector('.carousel-image a');
+      var imageLink = tabpanelNode.querySelector(".carousel-image a");
 
       if (imageLink) {
         imageLink.addEventListener(
-          'focus',
+          "focus",
           this.handleImageLinkFocus.bind(this)
         );
-        imageLink.addEventListener('blur', this.handleImageLinkBlur.bind(this));
+        imageLink.addEventListener("blur", this.handleImageLinkBlur.bind(this));
       }
     } else {
       this.tabpanelNodes.push(null);
@@ -96,14 +96,14 @@ var CarouselTablist = function (node, options) {
   // Pause Button
   if (this.pausePlayButtonNode) {
     this.pausePlayButtonNode.addEventListener(
-      'click',
+      "click",
       this.handlePausePlayButtonClick.bind(this)
     );
   }
 
   // Handle hover events
-  this.domNode.addEventListener('mouseover', this.handleMouseOver.bind(this));
-  this.domNode.addEventListener('mouseout', this.handleMouseOut.bind(this));
+  this.domNode.addEventListener("mouseover", this.handleMouseOver.bind(this));
+  this.domNode.addEventListener("mouseout", this.handleMouseOut.bind(this));
 
   // initialize behavior based on options
 
@@ -122,9 +122,9 @@ CarouselTablist.prototype.enableOrDisableAutoRotation = function (disable) {
 /* Public function to update controls/caption styling */
 CarouselTablist.prototype.setAccessibleStyling = function (accessible) {
   if (accessible) {
-    this.domNode.classList.add('carousel-tablist-moreaccessible');
+    this.domNode.classList.add("carousel-tablist-moreaccessible");
   } else {
-    this.domNode.classList.remove('carousel-tablist-moreaccessible');
+    this.domNode.classList.remove("carousel-tablist-moreaccessible");
   }
 };
 
@@ -132,11 +132,11 @@ CarouselTablist.prototype.hideTabpanel = function (index) {
   var tabNode = this.tabNodes[index];
   var panelNode = this.tabpanelNodes[index];
 
-  tabNode.setAttribute('aria-selected', 'false');
-  tabNode.setAttribute('tabindex', '-1');
+  tabNode.setAttribute("aria-selected", "false");
+  tabNode.setAttribute("tabindex", "-1");
 
   if (panelNode) {
-    panelNode.classList.remove('active');
+    panelNode.classList.remove("active");
   }
 };
 
@@ -144,11 +144,11 @@ CarouselTablist.prototype.showTabpanel = function (index, moveFocus) {
   var tabNode = this.tabNodes[index];
   var panelNode = this.tabpanelNodes[index];
 
-  tabNode.setAttribute('aria-selected', 'true');
-  tabNode.removeAttribute('tabindex');
+  tabNode.setAttribute("aria-selected", "true");
+  tabNode.removeAttribute("tabindex");
 
   if (panelNode) {
-    panelNode.classList.add('active');
+    panelNode.classList.add("active");
   }
 
   if (moveFocus) {
@@ -209,26 +209,26 @@ CarouselTablist.prototype.updatePlaying = function (play) {
   this.isPlayingEnabled = play;
 
   if (play) {
-    this.pausePlayButtonNode.setAttribute('aria-label', this.pauseLabel);
-    this.pausePlayButtonNode.classList.remove('play');
-    this.pausePlayButtonNode.classList.add('pause');
-    this.liveRegionNode.setAttribute('aria-live', 'off');
+    this.pausePlayButtonNode.setAttribute("aria-label", this.pauseLabel);
+    this.pausePlayButtonNode.classList.remove("play");
+    this.pausePlayButtonNode.classList.add("pause");
+    this.liveRegionNode.setAttribute("aria-live", "off");
   } else {
-    this.pausePlayButtonNode.setAttribute('aria-label', this.playLabel);
-    this.pausePlayButtonNode.classList.remove('pause');
-    this.pausePlayButtonNode.classList.add('play');
-    this.liveRegionNode.setAttribute('aria-live', 'polite');
+    this.pausePlayButtonNode.setAttribute("aria-label", this.playLabel);
+    this.pausePlayButtonNode.classList.remove("pause");
+    this.pausePlayButtonNode.classList.add("play");
+    this.liveRegionNode.setAttribute("aria-live", "polite");
   }
 };
 
 /* Event Handlers */
 
 CarouselTablist.prototype.handleImageLinkFocus = function () {
-  this.liveRegionNode.classList.add('focus');
+  this.liveRegionNode.classList.add("focus");
 };
 
 CarouselTablist.prototype.handleImageLinkBlur = function () {
-  this.liveRegionNode.classList.remove('focus');
+  this.liveRegionNode.classList.remove("focus");
 };
 
 CarouselTablist.prototype.handleMouseOver = function (event) {
@@ -254,22 +254,22 @@ CarouselTablist.prototype.handleTabKeydown = function (event) {
   var flag = false;
 
   switch (event.key) {
-    case 'ArrowRight':
+    case "ArrowRight":
       this.setSelectedToNextTab(true);
       flag = true;
       break;
 
-    case 'ArrowLeft':
+    case "ArrowLeft":
       this.setSelectedToPreviousTab(true);
       flag = true;
       break;
 
-    case 'Home':
+    case "Home":
       this.setSelectedTab(0, true);
       flag = true;
       break;
 
-    case 'End':
+    case "End":
       this.setSelectedTab(this.tabNodes.length - 1, true);
       flag = true;
       break;
@@ -290,15 +290,15 @@ CarouselTablist.prototype.handleTabClick = function (event) {
 };
 
 CarouselTablist.prototype.handleTabFocus = function () {
-  this.tablistNode.classList.add('focus');
-  this.liveRegionNode.setAttribute('aria-live', 'polite');
+  this.tablistNode.classList.add("focus");
+  this.liveRegionNode.setAttribute("aria-live", "polite");
   this.hasFocus = true;
 };
 
 CarouselTablist.prototype.handleTabBlur = function () {
-  this.tablistNode.classList.remove('focus');
+  this.tablistNode.classList.remove("focus");
   if (this.playState) {
-    this.liveRegionNode.setAttribute('aria-live', 'off');
+    this.liveRegionNode.setAttribute("aria-live", "off");
   }
 
   this.hasFocus = false;
@@ -317,16 +317,16 @@ CarouselTablist.prototype.handleTabpanelFocusOut = function () {
 /* Initialize Carousel Tablists and options */
 
 window.addEventListener(
-  'load',
+  "load",
   function () {
-    var carouselEls = document.querySelectorAll('.carousel-tablist');
+    var carouselEls = document.querySelectorAll(".carousel-tablist");
     var carousels = [];
 
     // set example behavior based on
     // default setting of the checkboxes and the parameters in the URL
     // update checkboxes based on any corresponding URL parameters
     var checkboxes = document.querySelectorAll(
-      '.carousel-options input[type=checkbox]'
+      ".carousel-options input[type=checkbox]"
     );
     var urlParams = new URLSearchParams(location.search);
     var carouselOptions = {};
@@ -339,8 +339,8 @@ window.addEventListener(
 
       if (urlParams.has(checkbox.value)) {
         var urlParam = urlParams.get(checkbox.value);
-        if (typeof urlParam === 'string') {
-          checked = urlParam === 'true';
+        if (typeof urlParam === "string") {
+          checked = urlParam === "true";
           checkbox.checked = checked;
         }
       }
@@ -356,21 +356,21 @@ window.addEventListener(
     checkboxes.forEach(function (checkbox) {
       var updateEvent;
       switch (checkbox.value) {
-        case 'moreaccessible':
-          updateEvent = 'setAccessibleStyling';
+        case "moreaccessible":
+          updateEvent = "setAccessibleStyling";
           break;
-        case 'norotate':
-          updateEvent = 'enableOrDisableAutoRotation';
+        case "norotate":
+          updateEvent = "enableOrDisableAutoRotation";
           break;
       }
 
       // update the carousel behavior and URL when a checkbox state changes
-      checkbox.addEventListener('change', function (event) {
-        urlParams.set(event.target.value, event.target.checked + '');
+      checkbox.addEventListener("change", function (event) {
+        urlParams.set(event.target.value, event.target.checked + "");
         window.history.replaceState(
           null,
-          '',
-          window.location.pathname + '?' + urlParams
+          "",
+          window.location.pathname + "?" + urlParams
         );
 
         if (updateEvent) {
