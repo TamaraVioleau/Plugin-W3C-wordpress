@@ -17,7 +17,7 @@ add_action('wp_enqueue_scripts', 'custom_link_enqueue_styles');
 // Chargement du fichier JavaScript pour le front-end du site
 function custom_link_enqueue_scripts()
 {
-    wp_enqueue_script('custom-link-scripts', plugin_dir_url(__FILE__) . 'js/scripts.js', array(), '1.0', true);
+    wp_enqueue_script('custom-link-scripts', plugin_dir_url(__FILE__) . 'js/script-links.js', array(), '1.0', true);
 }
 add_action('wp_enqueue_scripts', 'custom_link_enqueue_scripts');
 
@@ -41,7 +41,7 @@ function custom_link_create_table()
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
 }
-register_activation_hook(__FILE__, 'custom_link_create_table');
+register_activation_hook(plugin_dir_path(__FILE__) . 'home-extension.php', 'custom_link_create_table');
 
 // Fonction pour créer un shortcode permettant d'afficher un lien
 function custom_link_shortcode($atts)
