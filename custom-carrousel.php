@@ -16,7 +16,7 @@ add_action('admin_enqueue_scripts', 'custom_carrousel_enqueue_assets');
 add_action('wp_enqueue_scripts', 'custom_carrousel_enqueue_assets');
 
 
-// Création des tables lors de l'activation du plugin
+// CREATION DES TABLES LORS DE L'ACTIVATION DU PLUGIN
 function custom_carrousel_create_table()
 {
     global $wpdb;
@@ -48,7 +48,7 @@ function custom_carrousel_create_table()
 
 register_activation_hook(plugin_dir_path(__FILE__) . 'home-extension.php', 'custom_carrousel_create_table');
 
-// Shortcode pour afficher un carrousel spécifique
+// GENERER LE SHORTCODE DU CARROUSEL OU CHOIX AVEC LE MENU DEROULANT
 function custom_carrousel_shortcode($atts)
 {
     global $wpdb;
@@ -128,7 +128,7 @@ function custom_carrousel_shortcode($atts)
 // Enregistrer le shortcode pour utilisation dans les contenus
 add_shortcode('custom_carrousel', 'custom_carrousel_shortcode');
 
-// Fonction pour créer un carrousel dans la base de données et pour afficher son shortcode dans la page admin
+// GESTIONNAIRE DE CARROUSELS PERSONNALISES POUR L'ADMIN WP
 function custom_link_carrousel_page()
 {
     global $wpdb;
@@ -156,6 +156,8 @@ function custom_link_carrousel_page()
 
         echo '<div class="notice notice-success"><p>Carrousel créé avec succès ! Voici votre shortcode: </p>';
         echo '<code>[custom_carrousel id="' . $carrousel_id . '"]</code></div>'; // Affiche le shortcode
+        $selected_carrousel_name = $carrousel_name;  // Utiliser le nom du carrousel directement après sa création.
+
     }
 
     // Traiter le formulaire du slide
@@ -211,6 +213,13 @@ function custom_link_carrousel_page()
         echo '<option value="' . esc_attr($carrousel->carrousel_id) . '" ' . $selected . '>' . esc_html($carrousel->name) . '</option>';
     }
 
+    if ($carrousel_id) {
+        $carrousel_data = $wpdb->get_row("SELECT * FROM $carrousel_table_name WHERE carrousel_id = $carrousel_id");
+        if ($carrousel_data) {
+            $selected_carrousel_name = $carrousel_data->name;
+        }
+    }
+
     echo '</select>
     <input type="submit" name="edit_carrousel" class="button" value="Ajouter">
     <input type="submit" name="delete_carrousel" class="button" value="Supprimer">
@@ -223,7 +232,7 @@ function custom_link_carrousel_page()
     if ($carrousel_id) {
 ?>
         <div class="wrap">
-            <h2>Ajouter un élément de carrousel</h2>
+            <h2>Ajouter un élément de carrousel <?php echo esc_html($selected_carrousel_name); ?></h2>
             <form method="post" action="">
                 <input type="hidden" name="carrousel_id" value="<?php echo $carrousel_id; ?>">
                 <table class="form-table">
