@@ -237,23 +237,62 @@ if (isset($_POST['modify_carrousel']) && isset($_POST['selected_carrousel'])) {
 
     echo '<h3>Modification des slides du carrousel : ' . esc_html($selected_carrousel_name) . '</h3>';
     echo '<div class="slides-grid">';
-    echo '<div class="header">Image (URL)</div>';
-    echo '<div class="header">Titre</div>';
-    echo '<div class="header">Description</div>';
-    echo '<div class="header">URL</div>';
 
     foreach ($slides as $slide) {
-        echo '<div class="cell truncate">' . esc_url($slide->image_url) . '</div>';
-        echo '<div class="cell truncate">' . esc_html($slide->title) . '</div>';
-        echo '<div class="cell truncate">' . esc_html($slide->description) . '</div>';
-        echo '<div class="cell truncate">' . esc_url($slide->link_url) . '</div>';
+        echo '<form method="post" action="">';
+        echo '<div class="item">';
+        
+        echo '<p class="slide-data-label"><strong>Titre :</strong></p>';
+        echo '<input type="text" name="title" value="' . esc_attr($slide->title) . '">';
+        
+        echo '<p class="slide-data-label"><strong>Image (URL) :</strong></p>';
+        echo '<input type="text" name="image_url" value="' . esc_url($slide->image_url) . '">';
+        
+        echo '<p class="slide-data-label"><strong>Description :</strong></p>';
+        echo '<textarea name="description">' . esc_html($slide->description) . '</textarea>';
+        
+        echo '<p class="slide-data-label"><strong>URL :</strong></p>';
+        echo '<input type="text" name="link_url" value="' . esc_url($slide->link_url) . '">';
+        
+        echo '<input type="hidden" name="id" value="' . intval($slide->id) . '">';
+        echo '<input type="hidden" name="carrousel_id" value="' . intval($carrousel_id) . '">';
+
+        echo '<p class="slide-data-label"><strong>Action :</strong></p>';
+        echo '<input type="submit" name="update_slide" value="Mettre à jour">'; // Bouton pour enregistrer les modifications
+        echo '</div>'; // Fermeture du div "item"
+        echo '</form>';
     }
 
     echo '</div>'; // Fermeture du div "slides-grid"
 }
 
+// Code pour traiter le formulaire de mise à jour du slide
+if (isset($_POST['update_slide']) && isset($_POST['id'])) {
+    $id = intval($_POST['id']);
+    $image_url = sanitize_text_field($_POST['image_url']);
+    $title = sanitize_text_field($_POST['title']);
+    $description = sanitize_text_field($_POST['description']);
+    $link_url = sanitize_text_field($_POST['link_url']);
 
-    echo '<div class="wrap">';
+    // Mettre à jour les données du slide dans la base de données
+    $wpdb->update(
+        $slides_table_name,
+        array(
+            'image_url' => $image_url,
+            'title' => $title,
+            'description' => $description,
+            'link_url' => $link_url
+        ),
+        array('id' => $id),
+        array('%s', '%s', '%s', '%s'),
+        array('%d')
+    );
+
+    echo '<div class="notice notice-success"><p>Slide mis à jour avec succès!</p></div>';
+}
+
+
+
 
     // Afficher le formulaire approprié (slide ou carrousel) en fonction du contexte       
     // Si le nom du carrousel est défini, afficher le formulaire du slide

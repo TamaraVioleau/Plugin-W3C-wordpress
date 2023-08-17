@@ -37,31 +37,30 @@
 
 /*CSS POUR TABLEAU DESIGN PATTERN LIENS (côté admin)*/
 
-  .slides-grid {
-    display: grid;
-    grid-template-columns: 200px 200px 200px 200px 200px;
-    gap: 10px; 
-    border: 1px solid #ccc;
-    padding: 10px;
-
+.slides-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
 }
 
-.header {
-    font-weight: bold;
-    background-color: #f5f5f5;
-    padding: 5px;
-    max-width: 200px;
-}
-
-.cell {
-    padding: 5px;
-    border: 1px solid #ccc;
+.item {
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 5px;
 }
 
 .truncate {
-  white-space: nowrap;    
-  overflow: hidden;        
-  text-overflow: ellipsis; 
-  max-width: 150px;        
-  display: inline-block;   
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+}
+
+.slide-data-label{
+  background-color: #cdcdcd;
+  padding:0.5rem;
+}
+
+strong{
+  font-weight: 700;
 }
