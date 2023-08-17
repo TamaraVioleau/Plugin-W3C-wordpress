@@ -291,9 +291,6 @@ if (isset($_POST['update_slide']) && isset($_POST['id'])) {
     echo '<div class="notice notice-success"><p>Slide mis à jour avec succès!</p></div>';
 }
 
-
-
-
     // Afficher le formulaire approprié (slide ou carrousel) en fonction du contexte       
     // Si le nom du carrousel est défini, afficher le formulaire du slide
     if ($carrousel_id && !isset($_POST['modify_carrousel']) && !isset($_POST['delete_carrousel'])) {
