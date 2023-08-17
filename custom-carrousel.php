@@ -132,6 +132,7 @@ add_shortcode('custom_carrousel', 'custom_carrousel_shortcode');
 function custom_link_carrousel_page()
 {
     global $wpdb;
+    $selected_carrousel_name = '';
     $carrousel_table_name = $wpdb->prefix . 'custom_carrousels';
     $slides_table_name = $wpdb->prefix . 'custom_carrousel_slides';
 
@@ -201,20 +202,23 @@ function custom_link_carrousel_page()
     <form method="post" action="">
         <select name="selected_carrousel">';
 
-    // Si aucun carrousel n'est sélectionné, affichez l'option "Choisir le carrousel" comme étant la valeur par défaut.
+    // Si aucun carrousel n'est sélectionné, affiche l'option "Choisir le carrousel" comme étant la valeur par défaut.
     if (!$carrousel_id) {
         echo '<option value="" selected="selected">Choisir le carrousel</option>';
     } else {
         echo '<option value="">Choisir le carrousel</option>';
     }
 
+// Parcourir tous les carrousels disponibles et les afficher comme options dans le menu déroulant.
     foreach ($all_carrousels as $carrousel) {
         $selected = ($carrousel_id == $carrousel->carrousel_id) ? 'selected="selected"' : '';
         echo '<option value="' . esc_attr($carrousel->carrousel_id) . '" ' . $selected . '>' . esc_html($carrousel->name) . '</option>';
     }
 
+    // Si un carrousel est sélectionné, récupérez ses données de la base de données.
     if ($carrousel_id) {
         $carrousel_data = $wpdb->get_row("SELECT * FROM $carrousel_table_name WHERE carrousel_id = $carrousel_id");
+            // Si les données pour le carrousel sélectionné sont récupérées avec succès, stockez son nom pour une utilisation ultérieure.
         if ($carrousel_data) {
             $selected_carrousel_name = $carrousel_data->name;
         }
@@ -222,14 +226,39 @@ function custom_link_carrousel_page()
 
     echo '</select>
     <input type="submit" name="edit_carrousel" class="button" value="Ajouter">
+    <input type="submit" name="modify_carrousel" class="button" value="Modifier">
     <input type="submit" name="delete_carrousel" class="button" value="Supprimer">
     </form>';
+
+// Si l'utilisateur clique sur "Modifier", la liste des éléments présents dans le carrousel s'affiche
+if (isset($_POST['modify_carrousel']) && isset($_POST['selected_carrousel'])) {
+    $carrousel_id = intval($_POST['selected_carrousel']);
+    $slides = $wpdb->get_results($wpdb->prepare("SELECT * FROM $slides_table_name WHERE carrousel_id = %d", $carrousel_id));
+
+    echo '<h3>Modification des slides du carrousel : ' . esc_html($selected_carrousel_name) . '</h3>';
+    echo '<div class="slides-grid">';
+    echo '<div class="header">Image (URL)</div>';
+    echo '<div class="header">Titre</div>';
+    echo '<div class="header">Description</div>';
+    echo '<div class="header">URL</div>';
+
+    foreach ($slides as $slide) {
+        echo '<div class="cell truncate">' . esc_url($slide->image_url) . '</div>';
+        echo '<div class="cell truncate">' . esc_html($slide->title) . '</div>';
+        echo '<div class="cell truncate">' . esc_html($slide->description) . '</div>';
+        echo '<div class="cell truncate">' . esc_url($slide->link_url) . '</div>';
+    }
+
+    echo '</div>'; // Fermeture du div "slides-grid"
+}
+
 
     echo '<div class="wrap">';
 
     // Afficher le formulaire approprié (slide ou carrousel) en fonction du contexte       
     // Si le nom du carrousel est défini, afficher le formulaire du slide
-    if ($carrousel_id) {
+    if ($carrousel_id && !isset($_POST['modify_carrousel']) && !isset($_POST['delete_carrousel'])) {
+
 ?>
         <div class="wrap">
             <h2>Ajouter un élément de carrousel <?php echo esc_html($selected_carrousel_name); ?></h2>
