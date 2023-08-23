@@ -5,7 +5,9 @@ function custom_carrousel_enqueue_assets()
     // Pour l'admin
     if (is_admin()) {
         wp_enqueue_style('custom-carrousel-admin-styles', plugin_dir_url(__FILE__) . 'css/style-admin.css');
+        wp_enqueue_script('custom-carrousel-admin-scripts', plugin_dir_url(__FILE__) . 'js/script-carrousel-admin.js', array('jquery'), '1.0', true);
     }
+
     // Pour le front-end
     else {
         wp_enqueue_style('custom-carrousel-styles', plugin_dir_url(__FILE__) . 'css/styles.css');
@@ -144,7 +146,7 @@ function custom_link_carrousel_page()
 
     echo '<h1>Gestionnaire de carrousels personnalisés</h1>';
     echo '<p>Permet de créer facilement des <strong>carrousels personnalisés</strong> pour votre site. <br> Un <strong>carrousel</strong> est un diaporama offrant une présentation dynamique de plusieurs éléments. <br> Les <strong>slides</strong> sont les pages de ce diaporama contenant les informations.</p>';
-    
+
 
     global $wpdb;
     $selected_carrousel_name = '';
@@ -153,6 +155,7 @@ function custom_link_carrousel_page()
 
     // Initialisez $carrousel_id avec la valeur du carrousel sélectionné, si disponible
     $carrousel_id = isset($_POST['selected_carrousel']) ? intval($_POST['selected_carrousel']) : null;
+
 
     // Récupérer tous les carrousels existants pour la liste déroulante
     $all_carrousels = $wpdb->get_results("SELECT * FROM $carrousel_table_name");
@@ -253,7 +256,6 @@ function custom_link_carrousel_page()
     }
 
     // Traiter la suppression du carrousel
-
     if (isset($_POST['delete_carrousel']) && isset($_POST['selected_carrousel'])) {
         $selected_carrousel = intval($_POST['selected_carrousel']);
 
@@ -266,7 +268,7 @@ function custom_link_carrousel_page()
         if ($carrousel && isset($carrousel->name)) {
             echo '<div class="notice notice-success"><p>Carrousel <strong>' . esc_html($carrousel->name) . '</strong> supprimé avec succès.</p></div>';
         } else {
-            echo '<div class="notice notice-error"><p>Erreur lors de la récupération du nom du carrousel!</p></div>';
+            echo '<div class="notice notice-error"><p>Erreur lors de la récupération du nom du carrousel !</p></div>';
         }
     }
 
@@ -278,7 +280,7 @@ function custom_link_carrousel_page()
     // Formulaire pour sélectionner un carrousel existant
     echo '<h2>Choisir le carrousel</h2>
     <form method="post" action="">
-        <select name="selected_carrousel">';
+        <select name="selected_carrousel" id="carrouselSelect">';
 
     // Si aucun carrousel n'est sélectionné, affiche l'option "Choisir le carrousel" comme étant la valeur par défaut.
     if (!$carrousel_id) {
@@ -303,9 +305,9 @@ function custom_link_carrousel_page()
     }
 
     echo '</select>
-    <input type="submit" name="edit_carrousel" class="button" value="Ajouter">
-    <input type="submit" name="modify_carrousel" class="button" value="Modifier">
-    <input type="submit" name="delete_carrousel" class="button" value="Supprimer">
+    <input type="submit" name="edit_carrousel" class="button" id="editCarrouselButton" value="Ajouter">
+    <input type="submit" name="modify_carrousel" class="button" id="modifyCarrouselButton" value="Modifier">
+    <input type="submit" name="delete_carrousel" class="button" id="deleteCarrouselButton" value="Supprimer">
     </form>';
 
     $slide_counter = 1;
