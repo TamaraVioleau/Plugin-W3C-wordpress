@@ -34,3 +34,33 @@
   input{
     margin: 0 1rem;
   }
+
+/*CSS POUR TABLEAU DESIGN PATTERN LIENS (côté admin)*/
+
+.slides-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.item {
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+}
+
+.slide-data-label{
+  background-color: #cdcdcd;
+  padding:0.5rem;
+}
+
+strong{
+  font-weight: 700;
+}
