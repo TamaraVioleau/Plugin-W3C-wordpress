@@ -338,4 +338,3 @@ function custom_link_carrousel_page()
         echo '<div class="notice notice-success"><p>Slide mis à jour avec succès!</p></div>';
     }
 }
-
