@@ -1,6 +1,7 @@
 <div class="wrap">
         <h2>Ajouter un élément de carrousel</h2>
         <form method="post" action="">
+        <?php wp_nonce_field('add_slide_action', 'add_slide_nonce'); ?>
             <input type="hidden" name="carrousel_id" value="<?php echo $carrousel_id; ?>">
             <table class="form-table">
                 <tr>
