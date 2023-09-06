@@ -290,16 +290,16 @@ function custom_link_carrousel_page()
             echo '<h3>Slide ' . $slide_counter . '</h3>';
 
             echo '<p class="slide-data-label"><strong>Titre :</strong></p>';
-            echo '<input type="text" name="title" value="' . esc_attr($slide->title) . '">';
+            echo '<input type="text" name="title"  class="input_slides" value="' . esc_attr($slide->title) . '">';
 
             echo '<p class="slide-data-label"><strong>Image (URL) :</strong></p>';
-            echo '<input type="text" name="image_url" value="' . esc_url($slide->image_url) . '">';
+            echo '<input type="text" name="image_url"  class="input_slides" value="' . esc_url($slide->image_url) . '">';
 
             echo '<p class="slide-data-label"><strong>Description :</strong></p>';
-            echo '<textarea name="description">' . esc_html($slide->description) . '</textarea>';
+            echo '<textarea name="description" class="textarea_slides">' . esc_html($slide->description) . '</textarea>';
 
             echo '<p class="slide-data-label"><strong>URL :</strong></p>';
-            echo '<input type="text" name="link_url" value="' . esc_url($slide->link_url) . '">';
+            echo '<input type="text" name="link_url"  class="input_slides" value="' . esc_url($slide->link_url) . '">';
 
             echo '<input type="hidden" name="id" value="' . intval($slide->id) . '">';
             echo '<input type="hidden" name="carrousel_id" value="' . intval($carrousel_id) . '">';
@@ -335,6 +335,6 @@ function custom_link_carrousel_page()
             array('%d')
         );
 
-        echo '<div class="notice notice-success"><p>Slide mis à jour avec succès!</p></div>';
+        echo '<div class="notice notice-success"><p>Slide <strong>"' . esc_html($title) . '"</strong> mis à jour avec succès!</p></div>';
     }
 }

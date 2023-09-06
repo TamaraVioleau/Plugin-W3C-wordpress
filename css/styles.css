@@ -31,7 +31,6 @@
 /*CSS POUR DESIGN PATTERN CARROUSEL W3C*/
 
 /* .carousel-tablist */
-
 img.reload {
   padding: 0.25em;
   display: block-inline;
@@ -72,7 +71,6 @@ img.reload {
 }
 
 /* More like bootstrap, less accessible */
-
 .carousel-tablist .carousel-item .carousel-image a img {
   height: 100%;
   width: 100%;
@@ -153,7 +151,6 @@ img.reload {
 }
 
 /* Shared CSS for Pause and Tab Controls */
-
 .carousel-tablist .controls {
   box-sizing: border-box;
   position: absolute;
@@ -171,7 +168,6 @@ img.reload {
 }
 
 /* SVG Controls */
-
 .carousel-tablist .rotation {
   flex: 0 0 auto;
   height: 30px;
@@ -324,7 +320,6 @@ img.reload {
 }
 
 /* More accessible carousel styles, with caption and controls above/below image */
-
 .carousel-tablist-moreaccessible {
   padding: 0;
   margin: 0;
@@ -397,3 +392,4 @@ img.reload {
 .carousel-tablist-moreaccessible [role="tab"] {
   z-index: 20;
 }
+
