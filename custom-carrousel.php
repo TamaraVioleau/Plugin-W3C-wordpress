@@ -17,6 +17,22 @@ function custom_carrousel_enqueue_assets()
 add_action('admin_enqueue_scripts', 'custom_carrousel_enqueue_assets');
 add_action('wp_enqueue_scripts', 'custom_carrousel_enqueue_assets');
 
+function wp_gear_manager_admin_scripts()
+{
+    wp_enqueue_media(); // Cela inclut tout ce qui est nécessaire pour la médiathèque moderne.
+    wp_enqueue_script('form_add_slide');
+}
+
+add_action('admin_enqueue_scripts', 'wp_gear_manager_admin_scripts');
+
+
+function wp_gear_manager_admin_styles()
+{
+    wp_enqueue_style('thickbox');
+}
+
+add_action('admin_print_scripts', 'wp_gear_manager_admin_scripts');
+add_action('admin_print_styles', 'wp_gear_manager_admin_styles');
 
 // CREATION DES TABLES LORS DE L'ACTIVATION DU PLUGIN
 function custom_carrousel_create_table()
@@ -252,6 +268,34 @@ function custom_link_carrousel_page()
         <input type="submit" name="delete_carrousel" class="button" id="deleteCarrouselButton" value="Supprimer">
         </form>';
 
+    echo '<div id="shortcodeContainer" style="display: none;">
+        <input type="text" id="shortcodeDisplay" readonly>
+        <button onclick="copyShortcode()">Copier le shortcode</button>
+      </div>';
+
+?>
+    <script type="text/javascript">
+        document.getElementById('carrouselSelect').addEventListener('change', function() {
+            let carrouselId = this.value;
+            if (carrouselId) {
+                let shortcode = '[custom_carrousel id="' + carrouselId + '"]';
+                document.getElementById('shortcodeDisplay').value = shortcode;
+                document.getElementById('shortcodeContainer').style.display = 'block';
+            } else {
+                document.getElementById('shortcodeContainer').style.display = 'none';
+            }
+        });
+
+        function copyShortcode() {
+            let copyText = document.getElementById("shortcodeDisplay");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // Pour les appareils mobiles
+            document.execCommand("copy");
+            alert("Shortcode copié: " + copyText.value);
+        }
+    </script>
+<?php
+
     // Traiter la suppression du carrousel
     if (isset($_POST['delete_carrousel']) && isset($_POST['selected_carrousel'])) {
         $selected_carrousel = intval($_POST['selected_carrousel']);
@@ -278,7 +322,7 @@ function custom_link_carrousel_page()
     // Si l'utilisateur clique sur "Modifier", la liste des éléments présents dans le carrousel s'affiche
     if (isset($_POST['modify_carrousel']) && isset($_POST['selected_carrousel'])) {
         $carrousel_id = intval($_POST['selected_carrousel']);
-        
+
         $slides = $wpdb->get_results($wpdb->prepare("SELECT * FROM $slides_table_name WHERE carrousel_id = %d", $carrousel_id));
 
         echo '<h3>Modification des slides du carrousel : ' . esc_html($selected_carrousel_name) . '</h3>';
