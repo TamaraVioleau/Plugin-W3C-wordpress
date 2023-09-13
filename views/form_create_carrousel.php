@@ -1,4 +1,4 @@
-<div class="wrap">
+<div class="wrap" id="wrap_createform">
     <h2>Créer un nouveau carrousel</h2>
     <form method="post" action="">
     <?php wp_nonce_field('create_carrousel_action', 'create_carrousel_nonce'); ?>

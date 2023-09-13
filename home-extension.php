@@ -29,7 +29,7 @@ function custom_link_admin_menu()
         'Liens',                    // Titre de la page
         'Liens',       // Titre du menu (remplace le nom de la sous-page automatique)
         'manage_options',           // Capacité
-        'design_pattern_w3c',       // Slug de la sous-page (doit être le même que le slug de la page parente)
+        'design_pattern_w3c',       // Slug de la sous-page (doit être le même que le slug de la page parente pour qu'elle soit la page par défaut)
         'custom_link_links_page'    // Fonction pour afficher le contenu de la sous-page "Liens"
     );
 

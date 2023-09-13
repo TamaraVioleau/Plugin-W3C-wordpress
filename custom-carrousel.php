@@ -174,6 +174,7 @@ function custom_link_carrousel_page()
     echo '<h1>Gestionnaire de carrousels personnalisés</h1>';
     echo '<p>Permet de créer facilement des <strong>carrousels personnalisés</strong> pour votre site. <br> Un <strong>carrousel</strong> est un diaporama offrant une présentation dynamique de plusieurs éléments. <br> Les <strong>slides</strong> sont les pages de ce diaporama contenant les informations.</p>';
 
+
     global $wpdb;
     $selected_carrousel_name = '';
     $carrousel_table_name = $wpdb->prefix . 'custom_carrousels';
@@ -236,9 +237,11 @@ function custom_link_carrousel_page()
     }
 
     // Formulaire pour sélectionner un carrousel existant
-    echo '<h2>Choisir le carrousel</h2>
+    echo '<div class="wrap"> 
+    <h2>Choisir le carrousel</h2>
         <form method="post" action="">
-            <select name="selected_carrousel" id="carrouselSelect">';
+            <select name="selected_carrousel" id="carrouselSelect">
+            </div>';
 
     // Si aucun carrousel n'est sélectionné, affiche l'option "Choisir le carrousel" comme étant la valeur par défaut.
     if (!$carrousel_id) {
