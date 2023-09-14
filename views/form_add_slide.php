@@ -29,7 +29,7 @@ jQuery(document).ready(function($) {
 
 
 <div class="wrap">
-    <h2>Ajouter un élément de carrousel</h2>
+    <h2>Ajouter une slide au carrousel <?php echo $carrousel_id; ?></h2>
     <form method="post" action="">
         <?php wp_nonce_field('add_slide_action', 'add_slide_nonce'); ?>
         <input type="hidden" name="carrousel_id" value="<?php echo $carrousel_id; ?>">
