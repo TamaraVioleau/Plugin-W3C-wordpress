@@ -338,38 +338,58 @@ function custom_link_carrousel_page()
 
             echo '<h3>Modification des slides du carrousel : ' . esc_html($selected_carrousel_name) . '</h3>';
             echo '<div class="slides-grid">';
-
+            echo '<form method="post" action="" class="slide-form">';
             foreach ($slides as $slide) {
-                echo '<form method="post" action="" class="slide-form">';
+
                 echo '<div class="item">';
+                echo '<input type="checkbox" name="selected_slides[]" value="' . intval($slide->id) . '">';
                 echo '<h3>Slide ' . $slide_counter . '</h3>';
-            
+
                 echo '<label for="title-' . $slide_counter . '" class="slide-data-label"><strong>Titre :</strong></label>';
                 echo '<input id="title-' . $slide_counter . '" type="text" name="title" class="input_slides" value="' . esc_attr($slide->title) . '">';
-            
+
                 echo '<div class="more-details" style="display:none;">';
-            
+
                 echo '<label for="image_url-' . $slide_counter . '" class="slide-data-label"><strong>Image (URL) :</strong></label>';
                 echo '<input id="image_url-' . $slide_counter . '" type="text" name="image_url" class="input_slides" value="' . esc_url($slide->image_url) . '">';
-            
+
                 echo '<label for="description-' . $slide_counter . '" class="slide-data-label"><strong>Description :</strong></label>';
                 echo '<textarea id="description-' . $slide_counter . '" name="description" class="textarea_slides">' . esc_html($slide->description) . '</textarea>';
-            
+
                 echo '<label for="link_url-' . $slide_counter . '" class="slide-data-label"><strong>URL :</strong></label>';
                 echo '<input id="link_url-' . $slide_counter . '" type="text" name="link_url" class="input_slides" value="' . esc_url($slide->link_url) . '">';
-            
+
                 echo '</div>';
-            
+
                 echo '<button type="button" onclick="toggleDetails(this)">Voir plus de détails</button>';
                 echo '<input type="hidden" name="id" value="' . intval($slide->id) . '">';
                 echo '<input type="hidden" name="carrousel_id" value="' . intval($carrousel_id) . '">';
                 echo '<input type="submit" name="update_slide" value="Mettre à jour">';
                 echo '</div>';
-                echo '</form>';
+
                 $slide_counter++;
             }
-            
+            echo '<input type="submit" name="delete_selected_slides" value="Supprimer les slides sélectionnées">';
+
+            echo '</form>';
             echo '</div>';
+        }
+    }
+
+    //Suppression multiple des slides au sein d'un carrousel
+    if (isset($_POST['delete_selected_slides']) && isset($_POST['selected_slides'])) {
+        $selected_slide_ids = $_POST['selected_slides'];
+        $deleted_count = 0;
+
+        foreach ($selected_slide_ids as $slide_id) {
+            deleteSlide(intval($slide_id));
+            $deleted_count++;
+        }
+
+        if ($deleted_count > 0) {
+            echo '<div class="notice notice-success"><p>' . $deleted_count . ' slide(s) supprimée(s) avec succès.</p></div>';
+        } else {
+            echo '<div class="notice notice-error"><p>Aucune slide n\'a été supprimée.</p></div>';
         }
     }
 }
