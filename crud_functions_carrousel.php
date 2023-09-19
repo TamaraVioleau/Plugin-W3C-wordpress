@@ -53,9 +53,19 @@ function updateSlide($id, $newImageUrl, $newTitle, $newDescription, $newLinkUrl)
 // Delete a carrousel
 function deleteCarrousel($id)
 {
-    global $wpdb, $carrousel_table_name;
-    $wpdb->delete($carrousel_table_name, array('id' => $id), array('%d'));
+    global $wpdb;
+    $carrousel_table_name = $wpdb->prefix . 'custom_carrousels';
+    $slides_table_name = $wpdb->prefix . 'custom_carrousel_slides';
+
+    // Supprimer les slides associées au carrousel
+    $wpdb->delete($slides_table_name, array('carrousel_id' => $id), array('%d'));
+
+    // Supprimer le carrousel lui-même
+    $wpdb->delete($carrousel_table_name, array('carrousel_id' => $id), array('%d'));
 }
+
+
+
 
 // Delete a slide
 function deleteSlide($id)

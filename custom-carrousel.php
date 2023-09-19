@@ -317,7 +317,8 @@ function custom_link_carrousel_page()
         if (isset($_POST['delete_carrousel']) && isset($_POST['selected_carrousel'])) {
             $selected_carrousel = intval($_POST['selected_carrousel']);
             $carrousel = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}custom_carrousels WHERE carrousel_id = $selected_carrousel");
-            deleteCarrousel($selected_carrousel);
+            deleteCarrousel($selected_carrousel, $carrousel_table_name);
+
 
             if ($carrousel && isset($carrousel->name)) {
                 echo '<div class="notice notice-success"><p>Carrousel <strong>' . esc_html($carrousel->name) . '</strong> supprimé avec succès.</p></div>';
