@@ -1,39 +1,64 @@
 <?php
-function custom_carrousel_admin_enqueue_scripts()
+// Inclure les fichiers CSS/JS
+function custom_carrousel_enqueue_assets()
 {
-    wp_enqueue_style('custom-carrousel-admin-styles', plugin_dir_url(__FILE__) . 'css/style-admin.css');
-}
-add_action('admin_enqueue_scripts', 'custom_carrousel_admin_enqueue_scripts');
+    // Pour l'admin
+    if (is_admin()) {
+        wp_enqueue_style('custom-carrousel-admin-styles', esc_url(plugin_dir_url(__FILE__)) . 'css/style-admin.css');
+        wp_enqueue_script('custom-carrousel-admin-scripts', esc_url(plugin_dir_url(__FILE__)) . 'js/script-carrousel-admin.js', array('jquery'), '1.0', true);
+    }
 
-// Chargement du fichier CSS pour le front-end du site
-function custom_carrousel_enqueue_styles()
+    // Pour le front-end
+    else {
+        wp_enqueue_style('custom-carrousel-styles', esc_url(plugin_dir_url(__FILE__)) . 'css/styles.css');
+        wp_enqueue_script('custom-carrousel-scripts', esc_url(plugin_dir_url(__FILE__)) . 'js/script-carrousel.js', array(), '1.0', true);
+    }
+}
+add_action('admin_enqueue_scripts', 'custom_carrousel_enqueue_assets');
+add_action('wp_enqueue_scripts', 'custom_carrousel_enqueue_assets');
+
+// Fonctions pour insérer le bouton de la médiathèque wordpress
+function wp_gear_manager_admin_scripts()
 {
-    wp_enqueue_style('custom-carrousel-styles', plugin_dir_url(__FILE__) . 'css/styles.css');
+    wp_enqueue_media(); // Cela inclut tout ce qui est nécessaire pour la médiathèque moderne.
+    wp_enqueue_script('form_add_slide');
 }
-add_action('wp_enqueue_scripts', 'custom_carrousel_enqueue_styles');
 
-// Chargement du fichier JavaScript pour le front-end du site
-function custom_carrousel_enqueue_scripts()
+add_action('admin_enqueue_scripts', 'wp_gear_manager_admin_scripts');
+
+
+function wp_gear_manager_admin_styles()
 {
-    wp_enqueue_script('custom-carrousel-scripts', plugin_dir_url(__FILE__) . 'js/script-carrousel.js', array(), '1.0', true);
+    wp_enqueue_style('thickbox');
 }
-add_action('wp_enqueue_scripts', 'custom_carrousel_enqueue_scripts');
 
+add_action('admin_print_scripts', 'wp_gear_manager_admin_scripts');
+add_action('admin_print_styles', 'wp_gear_manager_admin_styles');
 
-// Créer les tables lors de l'activation du plugin
+//Inclure le fichier CRUD dans le fichier principal
+require 'crud_functions_carrousel.php';
+
+function insert_into_table($table_name, $data, $format)
+{
+    global $wpdb;
+    $wpdb->insert($table_name, $data, $format);
+    return $wpdb->insert_id;
+}
+
+// CREATION DES TABLES LORS DE L'ACTIVATION DU PLUGIN
 function custom_carrousel_create_table()
 {
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
 
-    // Table pour les carrousels
+    // Structure SQL pour créer la table des carrousels
     $sql_carrousel = "CREATE TABLE {$wpdb->prefix}custom_carrousels (
         carrousel_id mediumint(9) NOT NULL AUTO_INCREMENT,
         name varchar(255) NOT NULL,
         UNIQUE KEY carrousel_id (carrousel_id)
     ) $charset_collate;";
 
-    // Table pour les slides
+    // Structure SQL pour créer la table des slides
     $sql_slides = "CREATE TABLE {$wpdb->prefix}custom_carrousel_slides (
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         carrousel_id mediumint(9) NOT NULL,
@@ -52,20 +77,24 @@ function custom_carrousel_create_table()
 
 register_activation_hook(plugin_dir_path(__FILE__) . 'home-extension.php', 'custom_carrousel_create_table');
 
-// Fonction pour créer un shortcode permettant d'afficher le carrousel
+/**
+ * GENERE HTML DU CARROUSEL PERSONNALISE DEPUIS LA BDD
+ * Cette fonction est destinée à être utilisée comme un shortcode dans WordPress.
+ * Elle récupère les diapositives associées à un ID de carrousel spécifique
+ * et retourne le code HTML correspondant pour afficher le carrousel.
+ */
 function custom_carrousel_shortcode($atts)
 {
     global $wpdb;
     $table_name = $wpdb->prefix . 'custom_carrousel_slides';
 
- // Récupérer l'ID du carrousel depuis les attributs du shortcode
- $atts = shortcode_atts( array('id' => 0), $atts, 'custom_carrousel' );
- $carrousel_id = intval($atts['id']);
+    $atts = shortcode_atts(array('id' => 0), $atts, 'custom_carrousel');
+    $carrousel_id = intval($atts['id']);
 
- if (!$carrousel_id) return 'ID de carrousel non spécifié ou invalide.';
+    if (empty($carrousel_id)) return 'ID de carrousel non spécifié ou invalide.';
 
- // Récupérer toutes les entrées de la table custom_carrousel_slides filtrées par l'ID du carrousel
- $items = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name WHERE carrousel_id = %d", $carrousel_id));
+    // Récupérer toutes les entrées de la table custom_carrousel_slides filtrées par l'ID du carrousel
+    $items = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name WHERE carrousel_id = %d", $carrousel_id));
 
     if (!$items) return 'Aucun élément de carrousel trouvé.';
 
@@ -129,122 +158,238 @@ function custom_carrousel_shortcode($atts)
       </section><div class="col-sm-1"></div>';
 }
 
+// Enregistrer le shortcode pour utilisation dans les contenus
 add_shortcode('custom_carrousel', 'custom_carrousel_shortcode');
 
-// Partie ajoutée: fonction pour créer un carrousel
-function custom_carrousel_create()
+/***GESTIONNAIRE DE CARROUSELS PERSONNALISES POUR L'ADMIN WP ***/
+/*Fonction gérant le formulaire de création du carrousel */
+function display_form_create_carrousel()
 {
-    global $wpdb;
-    $carrousel_table = $wpdb->prefix . 'custom_carrousels';
-
-    if (isset($_POST['create_carrousel'])) {
-        $carrousel_name = sanitize_text_field($_POST['carrousel_name']);
-        $wpdb->insert($carrousel_table, array('name' => $carrousel_name), array('%s'));
-        add_action('admin_notices', function() {
-            echo '<div class="notice notice-success"><p>Carrousel créé avec succès!</p></div>';
-        });
-            }
+    include(plugin_dir_path(__FILE__) . 'views/form_create_carrousel.php');
 }
 
-// Fonction pour afficher le contenu de la page d'administration du carrousel
+/*Fonction gérant le menu déroulant de sélection d'un carrousel*/
+function display_select_carrousel_dropdown($carrousel_id, $all_carrousels)
+{
+    extract(array(
+        'carrousel_id' => $carrousel_id,
+        'all_carrousels' => $all_carrousels
+    ));
+    include(plugin_dir_path(__FILE__) . 'views/select_carrousel_dropdown.php');
+}
+/*Fonction gérant le formulaire d'ajout de slide */
+function display_form_add_slide($carrousel_id)
+{
+    extract(array('carrousel_id' => $carrousel_id));
+    include(plugin_dir_path(__FILE__) . 'views/form_add_slide.php');
+}
+
+/** Cette fonction sert à gérer des carrousels personnalisés dans WordPress.
+ * Elle permet de créer, modifier et supprimer des carrousels personnalisés.
+ * Elle permet également de créer, modifier et supprimer des diapositives de carrousel personnalisées.**/
 function custom_link_carrousel_page()
 {
+    echo '<h1>Gestionnaire de carrousels personnalisés</h1>';
+    echo '<p>Permet de créer facilement des <strong>carrousels personnalisés</strong> pour votre site. <br> Un <strong>carrousel</strong> est un diaporama offrant une présentation dynamique de plusieurs éléments. <br> Les <strong>slides</strong> sont les pages de ce diaporama contenant les informations.</p>';
+
+    $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'create_carrousel';
+
+    echo '<div class="wrap">';
+    echo '<h2 class="nav-tab-wrapper">';
+    echo '<a href="?page=custom_carrousel&tab=create_carrousel" class="nav-tab ' . ($active_tab == 'create_carrousel' ? 'nav-tab-active' : '') . '">Créer un carrousel</a>';
+    echo '<a href="?page=custom_carrousel&tab=choose_carrousel" class="nav-tab ' . ($active_tab == 'choose_carrousel' ? 'nav-tab-active' : '') . '">Choisir le carrousel</a>';
+    echo '</h2>';
     global $wpdb;
+    $selected_carrousel_name = '';
     $carrousel_table_name = $wpdb->prefix . 'custom_carrousels';
     $slides_table_name = $wpdb->prefix . 'custom_carrousel_slides';
-    $carrousel_id = null;
+    $carrousel_id = isset($_POST['selected_carrousel']) ? intval($_POST['selected_carrousel']) : null;
+    $all_carrousels = $wpdb->get_results("SELECT * FROM $carrousel_table_name");
 
-    // Traiter le formulaire du nom du carrousel si les données sont envoyées
-    if (isset($_POST['submit_carrousel_name'])) {
-        $carrousel_name = sanitize_text_field($_POST['carrousel_name']);
-    
-        // Insérer le nom dans la base de données
-        $wpdb->insert(
-            $carrousel_table_name,
-            array('name' => $carrousel_name),
-            array('%s')
-        );
-    
-        $carrousel_id = $wpdb->insert_id; // Récupère l'ID du carrousel nouvellement inséré
-    
-        echo '<div class="notice notice-success"><p>Carrousel créé avec succès! Voici votre shortcode: </p>';
-        echo '<code>[custom_carrousel id="' . $carrousel_id . '"]</code></div>'; // Affiche le shortcode
+    if ($active_tab == 'create_carrousel') {
+        // Afficher le formulaire de création de carrousel
+        display_form_create_carrousel();
+
+        // Traiter le formulaire du nom du carrousel
+        if (isset($_POST['submit_carrousel_name']) && check_admin_referer('create_carrousel_action', 'create_carrousel_nonce')) {
+            $carrousel_name = sanitize_text_field($_POST['carrousel_name']);
+
+            $wpdb->insert(
+                $carrousel_table_name,
+                array('name' => $carrousel_name),
+                array('%s')
+            );
+
+            $carrousel_id = $wpdb->insert_id;
+
+            echo '<div class="notice notice-success"><p>Carrousel créé avec succès ! Voici votre shortcode: </p>';
+            echo '<code>[custom_carrousel id="' . $carrousel_id . '"]</code></div>'; // Affiche le shortcode
+            $selected_carrousel_name = $carrousel_name;  // Utiliser le nom du carrousel directement après sa création.
+        }
+
+        // Afficher le formulaire approprié (slide ou carrousel) en fonction du contexte       
+        if ($carrousel_id && !isset($_POST['modify_carrousel']) && !isset($_POST['delete_carrousel'])) {
+            display_form_add_slide($carrousel_id);
+        }
+
+        // Traiter le formulaire du slide
+        if (isset($_POST['submit_slide']) && check_admin_referer('add_slide_action', 'add_slide_nonce')) {
+            $image_url = sanitize_text_field($_POST['image_url']);
+            $title = sanitize_text_field($_POST['title']);
+            $description = sanitize_text_field($_POST['description']);
+            $link_url = sanitize_text_field($_POST['link_url']);
+            $carrousel_id = intval($_POST['carrousel_id']);
+
+            // Insérer les données du slide dans la base de données
+            $wpdb->insert(
+                $slides_table_name,
+                array(
+                    'carrousel_id' => $carrousel_id,
+                    'image_url' => $image_url,
+                    'title' => $title,
+                    'description' => $description,
+                    'link_url' => $link_url
+                ),
+                array('%d', '%s', '%s', '%s', '%s')
+            );
+
+            echo '<div class="notice notice-success"><p>Slide ajouté avec succès!</p></div>';
+        }
+    } elseif ($active_tab == 'choose_carrousel') {
+        // Afficher le menu déroulant pour choisir un carrousel existant
+        display_select_carrousel_dropdown($carrousel_id, $all_carrousels);
+
+        if ($carrousel_id && !isset($_POST['modify_carrousel']) && !isset($_POST['delete_carrousel'])) {
+            display_form_add_slide($carrousel_id);
+        }
+
+        if (isset($_POST['submit_slide']) && check_admin_referer('add_slide_action', 'add_slide_nonce')) {
+            $image_url = sanitize_text_field($_POST['image_url']);
+            $title = sanitize_text_field($_POST['title']);
+            $description = sanitize_text_field($_POST['description']);
+            $link_url = sanitize_text_field($_POST['link_url']);
+            $carrousel_id = intval($_POST['carrousel_id']);
+
+            // Insérer les données du slide dans la base de données
+            $wpdb->insert(
+                $slides_table_name,
+                array(
+                    'carrousel_id' => $carrousel_id,
+                    'image_url' => $image_url,
+                    'title' => $title,
+                    'description' => $description,
+                    'link_url' => $link_url
+                ),
+                array('%d', '%s', '%s', '%s', '%s')
+            );
+
+            echo '<div class="notice notice-success"><p>Slide ajouté avec succès!</p></div>';
+        }
+
+        // Code pour traiter le formulaire de mise à jour du slide
+        if (isset($_POST['update_slide']) && isset($_POST['id'])) {
+            $id = intval($_POST['id']);
+            $image_url = sanitize_text_field($_POST['image_url']);
+            $title = sanitize_text_field($_POST['title']);
+            $description = sanitize_text_field($_POST['description']);
+            $link_url = sanitize_text_field($_POST['link_url']);
+
+            // Mettre à jour les données du slide dans la base de données
+            $wpdb->update(
+                $slides_table_name,
+                array(
+                    'image_url' => $image_url,
+                    'title' => $title,
+                    'description' => $description,
+                    'link_url' => $link_url
+                ),
+                array('id' => $id),
+                array('%s', '%s', '%s', '%s'),
+                array('%d')
+            );
+
+            echo '<div class="notice notice-success"><p>Slide <strong>"' . esc_html($title) . '"</strong> mis à jour avec succès!</p></div>';
+        }
+
+        // Traiter la suppression du carrousel
+        if (isset($_POST['delete_carrousel']) && isset($_POST['selected_carrousel'])) {
+            $selected_carrousel = intval($_POST['selected_carrousel']);
+            $carrousel = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}custom_carrousels WHERE carrousel_id = $selected_carrousel");
+            deleteCarrousel($selected_carrousel, $carrousel_table_name);
+
+            if ($carrousel && isset($carrousel->name)) {
+                echo '<div class="notice notice-success"><p>Carrousel <strong>' . esc_html($carrousel->name) . '</strong> supprimé avec succès.</p></div>';
+            } else {
+                echo '<div class="notice notice-error"><p>Erreur lors de la récupération du nom du carrousel !</p></div>';
+            }
+        }
+
+        // Si l'utilisateur clique sur "Ajouter", la variable $carrousel_id est mise à jour
+        if (isset($_POST['edit_carrousel']) && isset($_POST['selected_carrousel'])) {
+            $carrousel_id = intval($_POST['selected_carrousel']);
+        }
+
+        $slide_counter = 1;
+        // Si l'utilisateur clique sur "Modifier", la liste des éléments présents dans le carrousel s'affiche
+        if (isset($_POST['modify_carrousel']) && isset($_POST['selected_carrousel'])) {
+            $carrousel_id = intval($_POST['selected_carrousel']);
+
+            $slides = $wpdb->get_results($wpdb->prepare("SELECT * FROM $slides_table_name WHERE carrousel_id = %d", $carrousel_id));
+
+            echo '<h3>Modification des slides du carrousel : ' . esc_html($selected_carrousel_name) . '</h3>';
+            echo '<div class="slides-grid">';
+            echo '<form method="post" action="" class="slide-form">';
+            foreach ($slides as $slide) {
+
+                echo '<div class="item">';
+                echo '<input type="checkbox" name="selected_slides[]" value="' . intval($slide->id) . '">';
+                echo '<h3>Slide ' . $slide_counter . '</h3>';
+
+                echo '<label for="title-' . $slide_counter . '" class="slide-data-label"><strong>Titre :</strong></label>';
+                echo '<input id="title-' . $slide_counter . '" type="text" name="title" class="input_slides" value="' . esc_attr($slide->title) . '">';
+
+                echo '<div class="more-details" style="display:none;">';
+
+                echo '<label for="image_url-' . $slide_counter . '" class="slide-data-label"><strong>Image (URL) :</strong></label>';
+                echo '<input id="image_url-' . $slide_counter . '" type="text" name="image_url" class="input_slides" value="' . esc_url($slide->image_url) . '">';
+
+                echo '<label for="description-' . $slide_counter . '" class="slide-data-label"><strong>Description :</strong></label>';
+                echo '<textarea id="description-' . $slide_counter . '" name="description" class="textarea_slides">' . esc_html($slide->description) . '</textarea>';
+
+                echo '<label for="link_url-' . $slide_counter . '" class="slide-data-label"><strong>URL :</strong></label>';
+                echo '<input id="link_url-' . $slide_counter . '" type="text" name="link_url" class="input_slides" value="' . esc_url($slide->link_url) . '">';
+
+                echo '</div>';
+
+                echo '<button type="button" onclick="toggleDetails(this)">Voir plus de détails</button>';
+                echo '<input type="hidden" name="id" value="' . intval($slide->id) . '">';
+                echo '<input type="hidden" name="carrousel_id" value="' . intval($carrousel_id) . '">';
+                echo '<input type="submit" name="update_slide" value="Mettre à jour">';
+                echo '</div>';
+
+                $slide_counter++;
+            }
+            echo '<input type="submit" name="delete_selected_slides" value="Supprimer les slides sélectionnées">';
+
+            echo '</form>';
+            echo '</div>';
+        }
     }
-    
 
-    // Traiter le formulaire du slide si les données sont envoyées
-    if (isset($_POST['submit_slide'])) {
-        $image_url = sanitize_text_field($_POST['image_url']);
-        $title = sanitize_text_field($_POST['title']);
-        $description = sanitize_text_field($_POST['description']);
-        $link_url = sanitize_text_field($_POST['link_url']);
-        $carrousel_id = intval($_POST['carrousel_id']);
+    //Suppression multiple des slides au sein d'un carrousel
+    if (isset($_POST['delete_selected_slides']) && isset($_POST['selected_slides'])) {
+        $selected_slide_ids = $_POST['selected_slides'];
+        $deleted_count = 0;
 
-        // Insérer les données du slide dans la base de données
-        $wpdb->insert(
-            $slides_table_name,
-            array(
-                'carrousel_id' => $carrousel_id,
-                'image_url' => $image_url,
-                'title' => $title,
-                'description' => $description,
-                'link_url' => $link_url
-            ),
-            array('%d', '%s', '%s', '%s', '%s')
-        );
+        foreach ($selected_slide_ids as $slide_id) {
+            deleteSlide(intval($slide_id));
+            $deleted_count++;
+        }
 
-        echo '<div class="notice notice-success"><p>Slide ajouté avec succès!</p></div>';
-    }
-
-    if ($carrousel_id) {
-        // Si le nom du carrousel est défini, afficher le formulaire du slide
-?>
-        <div class="wrap">
-            <h2>Ajouter un élément de carrousel</h2>
-            <form method="post" action="">
-                <input type="hidden" name="carrousel_id" value="<?php echo $carrousel_id; ?>">
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><label for="image_url">URL de l'image</label></th>
-                        <td><input type="text" name="image_url" id="image_url" class="regular-text"></td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="title">Titre</label></th>
-                        <td><input type="text" name="title" id="title" class="regular-text" required></td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="description">Description</label></th>
-                        <td><textarea name="description" id="description" class="regular-text" required></textarea></td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="link_url">URL du lien</label></th>
-                        <td><input type="text" name="link_url" id="link_url" class="regular-text" required></td>
-                    </tr>
-                </table>
-                <p class="submit">
-                    <input type="submit" name="submit_slide" id="submit_slide" class="button button-primary" value="Ajouter">
-                </p>
-            </form>
-        </div>
-<?php
-    } else {
-        // Sinon, afficher le formulaire du nom du carrousel
-?>
-        <div class="wrap">
-            <h2>Créer un nouveau carrousel</h2>
-            <form method="post" action="">
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><label for="carrousel_name">Nom du carrousel</label></th>
-                        <td><input type="text" name="carrousel_name" id="carrousel_name" class="regular-text" required></td>
-                    </tr>
-                </table>
-                <p class="submit">
-                    <input type="submit" name="submit_carrousel_name" id="submit_carrousel_name" class="button button-primary" value="Créer">
-                </p>
-            </form>
-        </div>
-<?php
+        if ($deleted_count > 0) {
+            echo '<div class="notice notice-success"><p>' . $deleted_count . ' slide(s) supprimée(s) avec succès.</p></div>';
+        } else {
+            echo '<div class="notice notice-error"><p>Aucune slide n\'a été supprimée.</p></div>';
+        }
     }
 }
-

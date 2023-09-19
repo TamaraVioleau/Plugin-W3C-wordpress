@@ -1,36 +1,127 @@
 /*CSS POUR TABLEAU DESIGN PATTERN LIENS (côté admin)*/
 .grid-table {
-    display: table;
-    width: 100%;
-  }
-  
-  .grid-header,
-  .grid-row {
-    display: table-row;
-  }
-  
-  .grid-cell {
-    display: table-cell;
-    padding: 8px;
-    border: 1px solid #ccc;
-  }
-  
-  .grid-header .grid-cell {
-    font-weight: bold;
-    background-color: #f0f0f0;
-  }
-  
-  .copy-shortcode-btn {
-    cursor: pointer;
-  }
-  
-  .button {
-    margin-left: 5px;
-  }
+  display: table;
+  width: 100%;
+}
 
-  .wp-core-ui .button, .wp-core-ui .button-secondary{
-  vertical-align: baseline;}
+.grid-header,
+.grid-row {
+  display: table-row;
+}
 
-  input{
-    margin: 0 1rem;
-  }
+.grid-cell {
+  display: table-cell;
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+.grid-header .grid-cell {
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+.copy-shortcode-btn {
+  cursor: pointer;
+}
+
+.button {
+  margin-left: 5px;
+}
+
+.wp-core-ui .button,
+.wp-core-ui .button-secondary {
+  vertical-align: baseline;
+}
+
+input {
+  margin: 0 1rem;
+}
+
+/*CSS POUR TABLEAU DESIGN PATTERN LIENS (côté admin)*/
+
+.slides-grid {
+  display: grid;
+  /*grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));*/
+  gap: 20px;
+}
+
+.item {
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 5px;
+  background-color: #ffffff;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+}
+
+.slide-data-label {
+  background-color: #dcdcde;
+  padding: 0.5rem;
+  display: block;
+  border: 1px solid #8c8f94;
+  border-bottom: 0;
+}
+
+strong {
+  font-weight: 700;
+}
+
+/*CSS POUR TABLEAU DESIGN PATTERN CARROUSEL-LISTE SLIDES  (côté admin)*/
+
+.textarea_slides {
+  width: 100%;
+  height: 100px;
+  margin-bottom: 1rem;
+  border-radius: 0;
+}
+
+.input_slides {
+  width: 100%;
+  height: 40px;
+  margin: 0;
+  margin-bottom: 1rem;
+  border-radius: 0 !important;
+}
+
+#image_url,
+#title,
+#description,
+#link_url {
+  margin: 0;
+  width: 70% !important;
+}
+
+#image_url,
+#title,
+#link_url {
+  height: 40px;
+}
+
+#description {
+  margin: 0;
+  height: 100px;
+}
+
+/*SHORTCODE CARROUSEL*/
+input[readonly] {
+  margin: 1rem 0;
+  border: none;
+  background-color: #dcdcde;
+}
+
+#shortcodeContainer > button {
+  padding: 0.3rem;
+}
+
+.submit {
+  margin-top: 0 !important;
+}
+
+.form-table th {
+  width: 8rem;
+}
