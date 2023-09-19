@@ -195,7 +195,6 @@ function custom_link_carrousel_page()
     $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'create_carrousel';
 
     echo '<div class="wrap">';
-    echo '<h1>Gestionnaire de carrousels personnalisés</h1>';
     echo '<h2 class="nav-tab-wrapper">';
     echo '<a href="?page=custom_carrousel&tab=create_carrousel" class="nav-tab ' . ($active_tab == 'create_carrousel' ? 'nav-tab-active' : '') . '">Créer un carrousel</a>';
     echo '<a href="?page=custom_carrousel&tab=choose_carrousel" class="nav-tab ' . ($active_tab == 'choose_carrousel' ? 'nav-tab-active' : '') . '">Choisir le carrousel</a>';
@@ -312,13 +311,11 @@ function custom_link_carrousel_page()
             echo '<div class="notice notice-success"><p>Slide <strong>"' . esc_html($title) . '"</strong> mis à jour avec succès!</p></div>';
         }
 
-
         // Traiter la suppression du carrousel
         if (isset($_POST['delete_carrousel']) && isset($_POST['selected_carrousel'])) {
             $selected_carrousel = intval($_POST['selected_carrousel']);
             $carrousel = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}custom_carrousels WHERE carrousel_id = $selected_carrousel");
             deleteCarrousel($selected_carrousel, $carrousel_table_name);
-
 
             if ($carrousel && isset($carrousel->name)) {
                 echo '<div class="notice notice-success"><p>Carrousel <strong>' . esc_html($carrousel->name) . '</strong> supprimé avec succès.</p></div>';
@@ -343,31 +340,35 @@ function custom_link_carrousel_page()
             echo '<div class="slides-grid">';
 
             foreach ($slides as $slide) {
-                echo '<form method="post" action="">';
+                echo '<form method="post" action="" class="slide-form">';
                 echo '<div class="item">';
                 echo '<h3>Slide ' . $slide_counter . '</h3>';
-
-                echo '<p class="slide-data-label"><strong>Titre :</strong></p>';
-                echo '<input type="text" name="title"  class="input_slides" value="' . esc_attr($slide->title) . '">';
-
-                echo '<p class="slide-data-label"><strong>Image (URL) :</strong></p>';
-                echo '<input type="text" name="image_url"  class="input_slides" value="' . esc_url($slide->image_url) . '">';
-
-                echo '<p class="slide-data-label"><strong>Description :</strong></p>';
-                echo '<textarea name="description" class="textarea_slides">' . esc_html($slide->description) . '</textarea>';
-
-                echo '<p class="slide-data-label"><strong>URL :</strong></p>';
-                echo '<input type="text" name="link_url"  class="input_slides" value="' . esc_url($slide->link_url) . '">';
-
+            
+                echo '<label for="title-' . $slide_counter . '" class="slide-data-label"><strong>Titre :</strong></label>';
+                echo '<input id="title-' . $slide_counter . '" type="text" name="title" class="input_slides" value="' . esc_attr($slide->title) . '">';
+            
+                echo '<div class="more-details" style="display:none;">';
+            
+                echo '<label for="image_url-' . $slide_counter . '" class="slide-data-label"><strong>Image (URL) :</strong></label>';
+                echo '<input id="image_url-' . $slide_counter . '" type="text" name="image_url" class="input_slides" value="' . esc_url($slide->image_url) . '">';
+            
+                echo '<label for="description-' . $slide_counter . '" class="slide-data-label"><strong>Description :</strong></label>';
+                echo '<textarea id="description-' . $slide_counter . '" name="description" class="textarea_slides">' . esc_html($slide->description) . '</textarea>';
+            
+                echo '<label for="link_url-' . $slide_counter . '" class="slide-data-label"><strong>URL :</strong></label>';
+                echo '<input id="link_url-' . $slide_counter . '" type="text" name="link_url" class="input_slides" value="' . esc_url($slide->link_url) . '">';
+            
+                echo '</div>';
+            
+                echo '<button type="button" onclick="toggleDetails(this)">Voir plus de détails</button>';
                 echo '<input type="hidden" name="id" value="' . intval($slide->id) . '">';
                 echo '<input type="hidden" name="carrousel_id" value="' . intval($carrousel_id) . '">';
-
-                echo '<p class="slide-data-label"><strong>Action :</strong></p>';
                 echo '<input type="submit" name="update_slide" value="Mettre à jour">';
                 echo '</div>';
                 echo '</form>';
                 $slide_counter++;
             }
+            
             echo '</div>';
         }
     }
