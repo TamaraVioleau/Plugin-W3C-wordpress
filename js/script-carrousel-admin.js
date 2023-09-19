@@ -30,8 +30,6 @@ jQuery(document).ready(function ($) {
   toggleButtons(initialCarrouselSelected);
 });
 
-
-
 //FONCTION AFFICHAGE DETAILS SLIDES
 // Variable pour garder une trace de la slide actuellement ouverte
 let currentlyOpenDetails = null;
@@ -42,7 +40,8 @@ function toggleDetails(buttonElement) {
   // Fermer la slide actuellement ouverte si elle existe
   if (currentlyOpenDetails && currentlyOpenDetails !== detailsDiv) {
     currentlyOpenDetails.style.display = "none";
-    currentlyOpenDetails.nextElementSibling.textContent = "Voir plus de détails";
+    currentlyOpenDetails.nextElementSibling.textContent =
+      "Voir plus de détails";
   }
 
   // Ouvrir ou fermer la nouvelle slide
@@ -57,3 +56,20 @@ function toggleDetails(buttonElement) {
   }
 }
 
+//BOUTON SUPPRESSSION DESACTIVE SI NON SELECTION DE CASE
+jQuery(document).ready(function ($) {
+  // Fonction pour gérer l'activation/désactivation du bouton de suppression des slides
+  function toggleDeleteButton() {
+    const selectedSlides = $("input[name='selected_slides[]']:checked").length;
+    if (selectedSlides > 0) {
+      $(".delete_selected_slides").prop("disabled", false);
+    } else {
+      $(".delete_selected_slides").prop("disabled", true);
+    }
+  }
+  toggleDeleteButton();
+
+  $("input[name='selected_slides[]']").change(function () {
+    toggleDeleteButton();
+  });
+});
