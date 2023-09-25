@@ -39,17 +39,12 @@ input {
 
 /*CSS POUR TABLEAU DESIGN PATTERN LIENS (côté admin)*/
 
-.slides-grid {
-  display: grid;
-  /*grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));*/
-  gap: 20px;
-}
-
 .item {
   border: 1px solid #ccc;
   padding: 20px;
   border-radius: 5px;
   background-color: #ffffff;
+  margin-bottom: 1rem;
 }
 
 .truncate {
@@ -105,6 +100,20 @@ strong {
 #description {
   margin: 0;
   height: 100px;
+}
+
+.slide-header {
+  display: flex;
+  align-items: center;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  margin: 0 1rem 0 0.5rem;
+}
+
+.delete_selected_slides {
+  margin-top: 1rem;
 }
 
 /*SHORTCODE CARROUSEL*/

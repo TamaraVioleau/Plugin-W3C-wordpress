@@ -199,12 +199,13 @@ function custom_link_carrousel_page()
     echo '<a href="?page=custom_carrousel&tab=create_carrousel" class="nav-tab ' . ($active_tab == 'create_carrousel' ? 'nav-tab-active' : '') . '">Créer un carrousel</a>';
     echo '<a href="?page=custom_carrousel&tab=choose_carrousel" class="nav-tab ' . ($active_tab == 'choose_carrousel' ? 'nav-tab-active' : '') . '">Choisir le carrousel</a>';
     echo '</h2>';
+
     global $wpdb;
     $selected_carrousel_name = '';
     $carrousel_table_name = $wpdb->prefix . 'custom_carrousels';
     $slides_table_name = $wpdb->prefix . 'custom_carrousel_slides';
     $carrousel_id = isset($_POST['selected_carrousel']) ? intval($_POST['selected_carrousel']) : null;
-    $all_carrousels = $wpdb->get_results("SELECT * FROM $carrousel_table_name");
+    $all_carrousels = $wpdb->get_results("SELECT * FROM $carrousel_table_name ORDER BY name ASC");
 
     if ($active_tab == 'create_carrousel') {
         // Afficher le formulaire de création de carrousel
@@ -342,8 +343,11 @@ function custom_link_carrousel_page()
             foreach ($slides as $slide) {
 
                 echo '<div class="item">';
+
+                echo '<div class="slide-header">';
                 echo '<input type="checkbox" name="selected_slides[]" value="' . intval($slide->id) . '">';
                 echo '<h3>Slide ' . $slide_counter . '</h3>';
+                echo '</div>';
 
                 echo '<label for="title-' . $slide_counter . '" class="slide-data-label"><strong>Titre :</strong></label>';
                 echo '<input id="title-' . $slide_counter . '" type="text" name="title" class="input_slides" value="' . esc_attr($slide->title) . '">';
@@ -369,8 +373,7 @@ function custom_link_carrousel_page()
 
                 $slide_counter++;
             }
-            echo '<input type="submit" name="delete_selected_slides" value="Supprimer les slides sélectionnées">';
-
+            echo '<input type="submit" id="deleteButton" name="delete_selected_slides" value="Supprimer les slides sélectionnées" class="delete_selected_slides" disabled>';
             echo '</form>';
             echo '</div>';
         }
@@ -393,3 +396,4 @@ function custom_link_carrousel_page()
         }
     }
 }
+
