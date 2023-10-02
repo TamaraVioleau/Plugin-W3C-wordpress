@@ -406,9 +406,6 @@ function custom_link_carrousel_page()
     }
 
     if (isset($_POST['update_multiple_slides'])) {
-        var_dump($_POST['id']);
-        var_dump($_POST['titles']);
-        var_dump($_POST['image_urls']);
         // Récupération des id et des autres informations des slides
         $id = $_POST['id'];
         $titles = $_POST['titles'];
