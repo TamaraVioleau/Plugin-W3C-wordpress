@@ -212,22 +212,8 @@ function custom_link_carrousel_page()
         // Afficher le formulaire de création de carrousel
         display_form_create_carrousel();
 
-        // Traiter le formulaire du nom du carrousel
-        if (isset($_POST['submit_carrousel_name']) && check_admin_referer('create_carrousel_action', 'create_carrousel_nonce')) {
-            $carrousel_name = sanitize_text_field($_POST['carrousel_name']);
-
-            $wpdb->insert(
-                $carrousel_table_name,
-                array('name' => $carrousel_name),
-                array('%s')
-            );
-
-            $carrousel_id = $wpdb->insert_id;
-
-            echo '<div class="notice notice-success"><p>Carrousel créé avec succès ! Voici votre shortcode: </p>';
-            echo '<code>[custom_carrousel id="' . $carrousel_id . '"]</code></div>'; // Affiche le shortcode
-            $selected_carrousel_name = $carrousel_name;  // Utiliser le nom du carrousel directement après sa création.
-        }
+        // Traiter le du nom du carrousel vers la base de données et afficher le shortcode correspondant à l'ID du carrousel créé
+        createCarrousel($wpdb, $carrousel_table_name);
 
         // Afficher le formulaire approprié (slide ou carrousel) en fonction du contexte       
         if ($carrousel_id && !isset($_POST['modify_carrousel']) && !isset($_POST['delete_carrousel'])) {
@@ -273,7 +259,7 @@ function custom_link_carrousel_page()
         if (isset($_POST['delete_carrousel']) && isset($_POST['selected_carrousel'])) {
             $selected_carrousel = intval($_POST['selected_carrousel']);
             $carrousel = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}custom_carrousels WHERE carrousel_id = $selected_carrousel");
-            deleteCarrousel($selected_carrousel, $carrousel_table_name);
+            deleteCarrousel($selected_carrousel);
 
             if ($carrousel && isset($carrousel->name)) {
                 echo '<div class="notice notice-success"><p>Carrousel <strong>' . esc_html($carrousel->name) . '</strong> supprimé avec succès.</p></div>';
@@ -289,28 +275,7 @@ function custom_link_carrousel_page()
         }
 
         // Gestion de la soumission du formulaire de création de slide (ajout d'une slide)
-        if (isset($_POST['submit_slide']) && check_admin_referer('add_slide_action', 'add_slide_nonce')) {
-            $image_url = sanitize_text_field($_POST['image_url']);
-            $title = sanitize_text_field($_POST['title']);
-            $description = sanitize_text_field($_POST['description']);
-            $link_url = sanitize_text_field($_POST['link_url']);
-            $carrousel_id = intval($_POST['carrousel_id']);
-
-            // Insérer les données du slide dans la base de données
-            $wpdb->insert(
-                $slides_table_name,
-                array(
-                    'carrousel_id' => $carrousel_id,
-                    'image_url' => $image_url,
-                    'title' => $title,
-                    'description' => $description,
-                    'link_url' => $link_url
-                ),
-                array('%d', '%s', '%s', '%s', '%s')
-            );
-
-            echo '<div class="notice notice-success"><p>Slide ajouté avec succès!</p></div>';
-        }
+        createSlide($carrousel_id, $wpdb, $slides_table_name);
 
         /** MODIFICATION DES SLIDES **/
         //Modification d'une slide existante
@@ -406,37 +371,6 @@ function custom_link_carrousel_page()
     }
 
     if (isset($_POST['update_multiple_slides'])) {
-        // Récupération des id et des autres informations des slides
-        $id = $_POST['id'];
-        $titles = $_POST['titles'];
-        $image_urls = $_POST['image_urls'];
-        $descriptions = $_POST['descriptions'];
-        $link_urls = $_POST['link_urls'];
-
-        // Parcours de chaque slide pour la mise à jour
-        foreach ($id as $index => $id) {
-            // Sanitisation et conversion des données
-            $id = intval($id);
-            $title = sanitize_text_field($titles[$index]);
-            $image_url = sanitize_text_field($image_urls[$index]);
-            $description = sanitize_text_field($descriptions[$index]);
-            $link_url = sanitize_text_field($link_urls[$index]);
-
-            // Mise à jour de la slide dans la base de données
-            $wpdb->update(
-                $slides_table_name,
-                array(
-                    'title' => $title,
-                    'image_url' => $image_url,
-                    'description' => $description,
-                    'link_url' => $link_url
-                ),
-                array('id' => $id),
-                array('%s', '%s', '%s', '%s'),  // types de données
-                array('%d')  // type de données pour l'ID
-            );
-        }
-
-        echo '<div class="notice notice-success"><p>Slides mises à jour avec succès!</p></div>';
+        updateMultipleSlides($_POST, $wpdb, $slides_table_name);
     }
 }
