@@ -263,10 +263,32 @@ function custom_link_carrousel_page()
         // Afficher le menu déroulant pour choisir un carrousel existant
         display_select_carrousel_dropdown($carrousel_id, $all_carrousels);
 
+        // Mettre à jour le nom du carrousel sélectionné
+        if (isset($_POST['edit_carrousel']) && isset($_POST['selected_carrousel'])) {
+            $carrousel_id = intval($_POST['selected_carrousel']);
+        }
+
+        /** SUPPRESSION D'UN CARROUSEL **/
+        // Si je clique sur le bouton supprimer le carrousel, le carrousel est supprimé
+        if (isset($_POST['delete_carrousel']) && isset($_POST['selected_carrousel'])) {
+            $selected_carrousel = intval($_POST['selected_carrousel']);
+            $carrousel = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}custom_carrousels WHERE carrousel_id = $selected_carrousel");
+            deleteCarrousel($selected_carrousel, $carrousel_table_name);
+
+            if ($carrousel && isset($carrousel->name)) {
+                echo '<div class="notice notice-success"><p>Carrousel <strong>' . esc_html($carrousel->name) . '</strong> supprimé avec succès.</p></div>';
+            } else {
+                echo '<div class="notice notice-error"><p>Erreur lors de la récupération du nom du carrousel !</p></div>';
+            }
+        }
+
+        /** AJOUT D'UNE NOUVELLE SLIDE **/
+        //Affiche le formulaire de création d'une slide quand je clique sur le bouton "Ajouter une slide"
         if ($carrousel_id && !isset($_POST['modify_carrousel']) && !isset($_POST['delete_carrousel'])) {
             display_form_add_slide($carrousel_id);
         }
 
+        // Gestion de la soumission du formulaire de création de slide (ajout d'une slide)
         if (isset($_POST['submit_slide']) && check_admin_referer('add_slide_action', 'add_slide_nonce')) {
             $image_url = sanitize_text_field($_POST['image_url']);
             $title = sanitize_text_field($_POST['title']);
@@ -290,7 +312,8 @@ function custom_link_carrousel_page()
             echo '<div class="notice notice-success"><p>Slide ajouté avec succès!</p></div>';
         }
 
-        // Code pour traiter le formulaire de mise à jour du slide
+        /** MODIFICATION DES SLIDES **/
+        //Modification d'une slide existante
         if (isset($_POST['update_slide']) && isset($_POST['id'])) {
             $id = intval($_POST['id']);
             $image_url = sanitize_text_field($_POST['image_url']);
@@ -315,26 +338,8 @@ function custom_link_carrousel_page()
             echo '<div class="notice notice-success"><p>Slide <strong>"' . esc_html($title) . '"</strong> mis à jour avec succès!</p></div>';
         }
 
-        // Traiter la suppression du carrousel
-        if (isset($_POST['delete_carrousel']) && isset($_POST['selected_carrousel'])) {
-            $selected_carrousel = intval($_POST['selected_carrousel']);
-            $carrousel = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}custom_carrousels WHERE carrousel_id = $selected_carrousel");
-            deleteCarrousel($selected_carrousel, $carrousel_table_name);
-
-            if ($carrousel && isset($carrousel->name)) {
-                echo '<div class="notice notice-success"><p>Carrousel <strong>' . esc_html($carrousel->name) . '</strong> supprimé avec succès.</p></div>';
-            } else {
-                echo '<div class="notice notice-error"><p>Erreur lors de la récupération du nom du carrousel !</p></div>';
-            }
-        }
-
-        // Si l'utilisateur clique sur "Ajouter", la variable $carrousel_id est mise à jour
-        if (isset($_POST['edit_carrousel']) && isset($_POST['selected_carrousel'])) {
-            $carrousel_id = intval($_POST['selected_carrousel']);
-        }
-
+        // Affichage et modification des slides existantes à l'aide d'un formulaire
         $slide_counter = 1;
-        // Si l'utilisateur clique sur "Modifier", la liste des éléments présents dans le carrousel s'affiche
         if (isset($_POST['modify_carrousel']) && isset($_POST['selected_carrousel'])) {
             $carrousel_id = intval($_POST['selected_carrousel']);
 

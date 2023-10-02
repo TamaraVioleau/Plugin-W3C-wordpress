@@ -19,7 +19,7 @@
         </select>
         <input type="submit" name="edit_carrousel" class="button" id="editCarrouselButton" value="Ajouter une slide">
         <input type="submit" name="modify_carrousel" class="button" id="modifyCarrouselButton" value="Modifier les slides">
-        <input type="submit" name="delete_carrousel" class="button" id="deleteCarrouselButton" value="Supprimer les slides">
+        <input type="submit" name="delete_carrousel" class="button" id="deleteCarrouselButton" value="Supprimer le carrousel">
     </form>
 
     <div id="shortcodeContainer" style="display: none;">
