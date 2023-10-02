@@ -199,13 +199,15 @@ function custom_link_carrousel_page()
     echo '<a href="?page=custom_carrousel&tab=create_carrousel" class="nav-tab ' . ($active_tab == 'create_carrousel' ? 'nav-tab-active' : '') . '">Créer un carrousel</a>';
     echo '<a href="?page=custom_carrousel&tab=choose_carrousel" class="nav-tab ' . ($active_tab == 'choose_carrousel' ? 'nav-tab-active' : '') . '">Choisir le carrousel</a>';
     echo '</h2>';
+
     global $wpdb;
     $selected_carrousel_name = '';
     $carrousel_table_name = $wpdb->prefix . 'custom_carrousels';
     $slides_table_name = $wpdb->prefix . 'custom_carrousel_slides';
     $carrousel_id = isset($_POST['selected_carrousel']) ? intval($_POST['selected_carrousel']) : null;
-    $all_carrousels = $wpdb->get_results("SELECT * FROM $carrousel_table_name");
+    $all_carrousels = $wpdb->get_results("SELECT * FROM $carrousel_table_name ORDER BY name ASC");
 
+    //Si on clique sur onglet créer un carrousel
     if ($active_tab == 'create_carrousel') {
         // Afficher le formulaire de création de carrousel
         display_form_create_carrousel();
@@ -255,14 +257,38 @@ function custom_link_carrousel_page()
 
             echo '<div class="notice notice-success"><p>Slide ajouté avec succès!</p></div>';
         }
-    } elseif ($active_tab == 'choose_carrousel') {
+    }
+    //Si on clique sur onglet choisir le carrousel
+    elseif ($active_tab == 'choose_carrousel') {
         // Afficher le menu déroulant pour choisir un carrousel existant
         display_select_carrousel_dropdown($carrousel_id, $all_carrousels);
 
+        // Mettre à jour le nom du carrousel sélectionné
+        if (isset($_POST['edit_carrousel']) && isset($_POST['selected_carrousel'])) {
+            $carrousel_id = intval($_POST['selected_carrousel']);
+        }
+
+        /** SUPPRESSION D'UN CARROUSEL **/
+        // Si je clique sur le bouton supprimer le carrousel, le carrousel est supprimé
+        if (isset($_POST['delete_carrousel']) && isset($_POST['selected_carrousel'])) {
+            $selected_carrousel = intval($_POST['selected_carrousel']);
+            $carrousel = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}custom_carrousels WHERE carrousel_id = $selected_carrousel");
+            deleteCarrousel($selected_carrousel, $carrousel_table_name);
+
+            if ($carrousel && isset($carrousel->name)) {
+                echo '<div class="notice notice-success"><p>Carrousel <strong>' . esc_html($carrousel->name) . '</strong> supprimé avec succès.</p></div>';
+            } else {
+                echo '<div class="notice notice-error"><p>Erreur lors de la récupération du nom du carrousel !</p></div>';
+            }
+        }
+
+        /** AJOUT D'UNE NOUVELLE SLIDE **/
+        //Affiche le formulaire de création d'une slide quand je clique sur le bouton "Ajouter une slide"
         if ($carrousel_id && !isset($_POST['modify_carrousel']) && !isset($_POST['delete_carrousel'])) {
             display_form_add_slide($carrousel_id);
         }
 
+        // Gestion de la soumission du formulaire de création de slide (ajout d'une slide)
         if (isset($_POST['submit_slide']) && check_admin_referer('add_slide_action', 'add_slide_nonce')) {
             $image_url = sanitize_text_field($_POST['image_url']);
             $title = sanitize_text_field($_POST['title']);
@@ -286,7 +312,8 @@ function custom_link_carrousel_page()
             echo '<div class="notice notice-success"><p>Slide ajouté avec succès!</p></div>';
         }
 
-        // Code pour traiter le formulaire de mise à jour du slide
+        /** MODIFICATION DES SLIDES **/
+        //Modification d'une slide existante
         if (isset($_POST['update_slide']) && isset($_POST['id'])) {
             $id = intval($_POST['id']);
             $image_url = sanitize_text_field($_POST['image_url']);
@@ -311,26 +338,8 @@ function custom_link_carrousel_page()
             echo '<div class="notice notice-success"><p>Slide <strong>"' . esc_html($title) . '"</strong> mis à jour avec succès!</p></div>';
         }
 
-        // Traiter la suppression du carrousel
-        if (isset($_POST['delete_carrousel']) && isset($_POST['selected_carrousel'])) {
-            $selected_carrousel = intval($_POST['selected_carrousel']);
-            $carrousel = $wpdb->get_row("SELECT * FROM {$wpdb->prefix}custom_carrousels WHERE carrousel_id = $selected_carrousel");
-            deleteCarrousel($selected_carrousel, $carrousel_table_name);
-
-            if ($carrousel && isset($carrousel->name)) {
-                echo '<div class="notice notice-success"><p>Carrousel <strong>' . esc_html($carrousel->name) . '</strong> supprimé avec succès.</p></div>';
-            } else {
-                echo '<div class="notice notice-error"><p>Erreur lors de la récupération du nom du carrousel !</p></div>';
-            }
-        }
-
-        // Si l'utilisateur clique sur "Ajouter", la variable $carrousel_id est mise à jour
-        if (isset($_POST['edit_carrousel']) && isset($_POST['selected_carrousel'])) {
-            $carrousel_id = intval($_POST['selected_carrousel']);
-        }
-
+        // Affichage et modification des slides existantes à l'aide d'un formulaire
         $slide_counter = 1;
-        // Si l'utilisateur clique sur "Modifier", la liste des éléments présents dans le carrousel s'affiche
         if (isset($_POST['modify_carrousel']) && isset($_POST['selected_carrousel'])) {
             $carrousel_id = intval($_POST['selected_carrousel']);
 
@@ -342,35 +351,38 @@ function custom_link_carrousel_page()
             foreach ($slides as $slide) {
 
                 echo '<div class="item">';
+
+                echo '<div class="slide-header">';
                 echo '<input type="checkbox" name="selected_slides[]" value="' . intval($slide->id) . '">';
                 echo '<h3>Slide ' . $slide_counter . '</h3>';
+                echo '</div>';
 
                 echo '<label for="title-' . $slide_counter . '" class="slide-data-label"><strong>Titre :</strong></label>';
-                echo '<input id="title-' . $slide_counter . '" type="text" name="title" class="input_slides" value="' . esc_attr($slide->title) . '">';
+                echo '<input id="title-' . $slide_counter . '" type="text" name="titles[]" class="input_slides" value="' . esc_attr($slide->title) . '">';
 
                 echo '<div class="more-details" style="display:none;">';
 
                 echo '<label for="image_url-' . $slide_counter . '" class="slide-data-label"><strong>Image (URL) :</strong></label>';
-                echo '<input id="image_url-' . $slide_counter . '" type="text" name="image_url" class="input_slides" value="' . esc_url($slide->image_url) . '">';
+                echo '<input id="image_url-' . $slide_counter . '" type="text" name="image_urls[]" class="input_slides" value="' . esc_url($slide->image_url) . '">';
 
                 echo '<label for="description-' . $slide_counter . '" class="slide-data-label"><strong>Description :</strong></label>';
-                echo '<textarea id="description-' . $slide_counter . '" name="description" class="textarea_slides">' . esc_html($slide->description) . '</textarea>';
+                echo '<textarea id="description-' . $slide_counter . '" name="descriptions[]" class="textarea_slides">' . esc_html($slide->description) . '</textarea>';
 
                 echo '<label for="link_url-' . $slide_counter . '" class="slide-data-label"><strong>URL :</strong></label>';
-                echo '<input id="link_url-' . $slide_counter . '" type="text" name="link_url" class="input_slides" value="' . esc_url($slide->link_url) . '">';
+                echo '<input id="link_url-' . $slide_counter . '" type="text" name="link_urls[]" class="input_slides" value="' . esc_url($slide->link_url) . '">';
 
                 echo '</div>';
 
                 echo '<button type="button" onclick="toggleDetails(this)">Voir plus de détails</button>';
-                echo '<input type="hidden" name="id" value="' . intval($slide->id) . '">';
+                echo '<input type="hidden" name="id[]" value="' . intval($slide->id) . '">';
                 echo '<input type="hidden" name="carrousel_id" value="' . intval($carrousel_id) . '">';
-                echo '<input type="submit" name="update_slide" value="Mettre à jour">';
+
                 echo '</div>';
 
                 $slide_counter++;
             }
-            echo '<input type="submit" name="delete_selected_slides" value="Supprimer les slides sélectionnées">';
-
+            echo '<input type="submit" name="update_multiple_slides" value="Mettre à jour les slides">';
+            echo '<input type="submit" id="deleteButton" name="delete_selected_slides" value="Supprimer les slides sélectionnées" class="delete_selected_slides" disabled>';
             echo '</form>';
             echo '</div>';
         }
@@ -378,10 +390,10 @@ function custom_link_carrousel_page()
 
     //Suppression multiple des slides au sein d'un carrousel
     if (isset($_POST['delete_selected_slides']) && isset($_POST['selected_slides'])) {
-        $selected_slide_ids = $_POST['selected_slides'];
+        $selected_slide_id = $_POST['selected_slides'];
         $deleted_count = 0;
 
-        foreach ($selected_slide_ids as $slide_id) {
+        foreach ($selected_slide_id as $slide_id) {
             deleteSlide(intval($slide_id));
             $deleted_count++;
         }
@@ -391,5 +403,43 @@ function custom_link_carrousel_page()
         } else {
             echo '<div class="notice notice-error"><p>Aucune slide n\'a été supprimée.</p></div>';
         }
+    }
+
+    if (isset($_POST['update_multiple_slides'])) {
+        var_dump($_POST['id']);
+        var_dump($_POST['titles']);
+        var_dump($_POST['image_urls']);
+        // Récupération des id et des autres informations des slides
+        $id = $_POST['id'];
+        $titles = $_POST['titles'];
+        $image_urls = $_POST['image_urls'];
+        $descriptions = $_POST['descriptions'];
+        $link_urls = $_POST['link_urls'];
+
+        // Parcours de chaque slide pour la mise à jour
+        foreach ($id as $index => $id) {
+            // Sanitisation et conversion des données
+            $id = intval($id);
+            $title = sanitize_text_field($titles[$index]);
+            $image_url = sanitize_text_field($image_urls[$index]);
+            $description = sanitize_text_field($descriptions[$index]);
+            $link_url = sanitize_text_field($link_urls[$index]);
+
+            // Mise à jour de la slide dans la base de données
+            $wpdb->update(
+                $slides_table_name,
+                array(
+                    'title' => $title,
+                    'image_url' => $image_url,
+                    'description' => $description,
+                    'link_url' => $link_url
+                ),
+                array('id' => $id),
+                array('%s', '%s', '%s', '%s'),  // types de données
+                array('%d')  // type de données pour l'ID
+            );
+        }
+
+        echo '<div class="notice notice-success"><p>Slides mises à jour avec succès!</p></div>';
     }
 }
