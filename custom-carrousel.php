@@ -207,6 +207,7 @@ function custom_link_carrousel_page()
     $carrousel_id = isset($_POST['selected_carrousel']) ? intval($_POST['selected_carrousel']) : null;
     $all_carrousels = $wpdb->get_results("SELECT * FROM $carrousel_table_name ORDER BY name ASC");
 
+    //Si on clique sur onglet créer un carrousel
     if ($active_tab == 'create_carrousel') {
         // Afficher le formulaire de création de carrousel
         display_form_create_carrousel();
@@ -256,7 +257,9 @@ function custom_link_carrousel_page()
 
             echo '<div class="notice notice-success"><p>Slide ajouté avec succès!</p></div>';
         }
-    } elseif ($active_tab == 'choose_carrousel') {
+    }
+    //Si on clique sur onglet choisir le carrousel
+    elseif ($active_tab == 'choose_carrousel') {
         // Afficher le menu déroulant pour choisir un carrousel existant
         display_select_carrousel_dropdown($carrousel_id, $all_carrousels);
 
@@ -396,4 +399,3 @@ function custom_link_carrousel_page()
         }
     }
 }
-
