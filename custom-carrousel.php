@@ -6,6 +6,7 @@ function custom_carrousel_enqueue_assets()
     if (is_admin()) {
         wp_enqueue_style('custom-carrousel-admin-styles', esc_url(plugin_dir_url(__FILE__)) . 'css/style-admin.css');
         wp_enqueue_script('custom-carrousel-admin-scripts', esc_url(plugin_dir_url(__FILE__)) . 'js/script-carrousel-admin.js', array('jquery'), '1.0', true);
+        wp_enqueue_script('custom-tab-admin-scripts', esc_url(plugin_dir_url(__FILE__)) . 'js/script-tab.js', array('jquery'), '1.0', true);
     }
 
     // Pour le front-end
@@ -195,10 +196,13 @@ function custom_link_carrousel_page()
     $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'create_carrousel';
 
     echo '<div class="wrap">';
-    echo '<h2 class="nav-tab-wrapper">';
-    echo '<a href="?page=custom_carrousel&tab=create_carrousel" class="nav-tab ' . ($active_tab == 'create_carrousel' ? 'nav-tab-active' : '') . '">Créer un carrousel</a>';
-    echo '<a href="?page=custom_carrousel&tab=choose_carrousel" class="nav-tab ' . ($active_tab == 'choose_carrousel' ? 'nav-tab-active' : '') . '">Choisir le carrousel</a>';
-    echo '</h2>';
+    echo '<div class="nav-tab-wrapper">';
+    echo '<div role="tablist" aria-labelledby="tablist-1" class="manual">';
+
+    echo '<a id="tab-create" href="?page=custom_carrousel&tab=create_carrousel" role="tab" aria-controls="tabpanel-create" aria-selected="' . ($active_tab == 'create_carrousel' ? 'true' : 'false') . '" class="nav-tab ' . ($active_tab == 'create_carrousel' ? 'nav-tab-active' : '') . '">Créer un carrousel</a>';
+    echo '<a id="tab-choose" href="?page=custom_carrousel&tab=choose_carrousel" role="tab" aria-controls="tabpanel-choose" aria-selected="' . ($active_tab == 'choose_carrousel' ? 'true' : 'false') . '" class="nav-tab ' . ($active_tab == 'choose_carrousel' ? 'nav-tab-active' : '') . '">Modifier le carrousel</a>';
+    echo '</div>';
+    echo '</div>';
 
     global $wpdb;
     $selected_carrousel_name = '';
