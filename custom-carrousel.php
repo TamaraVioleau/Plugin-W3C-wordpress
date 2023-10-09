@@ -244,8 +244,7 @@ function custom_link_carrousel_page()
                 ),
                 array('%d', '%s', '%s', '%s', '%s')
             );
-
-            echo '<div class="notice notice-success"><p>Slide ajouté avec succès!</p></div>';
+            echo '<div class="notice notice-success"><p>Slide "' . esc_html($title) . '" ajouté avec succès !</p></div>';
         }
     }
     //Si on clique sur onglet choisir le carrousel

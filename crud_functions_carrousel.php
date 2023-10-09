@@ -43,7 +43,7 @@ function createSlide($carrousel_id, $wpdb, $slides_table_name)
             array('%d', '%s', '%s', '%s', '%s')
         );
 
-        echo '<div class="notice notice-success"><p>Slide ajouté avec succès!</p></div>';
+        echo '<div class="notice notice-success"><p>Slide "' . esc_html($title) . '" ajouté avec succès!</p></div>';
     }
 }
 
