@@ -217,12 +217,7 @@ function custom_link_carrousel_page()
         display_form_create_carrousel();
 
         // Traiter le du nom du carrousel vers la base de données et afficher le shortcode correspondant à l'ID du carrousel créé
-        createCarrousel($wpdb, $carrousel_table_name);
-
-        // Afficher le formulaire approprié (slide ou carrousel) en fonction du contexte       
-        if ($carrousel_id && !isset($_POST['modify_carrousel']) && !isset($_POST['delete_carrousel'])) {
-            display_form_add_slide($carrousel_id);
-        }
+        $carrousel_id = createCarrousel($wpdb, $carrousel_table_name);
 
         // Traiter le formulaire du slide
         if (isset($_POST['submit_slide']) && check_admin_referer('add_slide_action', 'add_slide_nonce')) {
@@ -246,7 +241,14 @@ function custom_link_carrousel_page()
             );
             echo '<div class="notice notice-success"><p>Slide "' . esc_html($title) . '" ajouté avec succès !</p></div>';
         }
+
+        // Afficher le formulaire approprié (slide ou carrousel) en fonction du contexte       
+        if ($carrousel_id) {
+            display_form_add_slide($carrousel_id);
+        }
     }
+
+
     //Si on clique sur onglet choisir le carrousel
     elseif ($active_tab == 'choose_carrousel') {
         // Afficher le menu déroulant pour choisir un carrousel existant

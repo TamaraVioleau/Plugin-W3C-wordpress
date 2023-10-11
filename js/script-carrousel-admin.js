@@ -12,19 +12,16 @@ jQuery(document).ready(function ($) {
       ).prop("disabled", true);
     }
   }
-
   // Gérer le changement dans le menu déroulant
   $("#carrouselSelect").change(function () {
     const carrouselSelected = $(this).val();
     toggleButtons(carrouselSelected);
   });
-
   // Gérer la soumission du formulaire
   $("form").submit(function (e) {
     const carrouselSelected = $("#carrouselSelect").val();
     toggleButtons(carrouselSelected);
   });
-
   // Activation initiale des boutons en fonction de la valeur sélectionnée
   const initialCarrouselSelected = $("#carrouselSelect").val();
   toggleButtons(initialCarrouselSelected);
@@ -33,10 +30,8 @@ jQuery(document).ready(function ($) {
 //FONCTION AFFICHAGE DETAILS SLIDES
 // Variable pour garder une trace de la slide actuellement ouverte
 let currentlyOpenDetails = null;
-
 function toggleDetails(buttonElement) {
   const detailsDiv = buttonElement.previousElementSibling;
-
   // Fermer la slide actuellement ouverte si elle existe
   if (currentlyOpenDetails && currentlyOpenDetails !== detailsDiv) {
     currentlyOpenDetails.style.display = "none";
@@ -56,8 +51,8 @@ function toggleDetails(buttonElement) {
   }
 }
 
-//BOUTON SUPPRESSSION DESACTIVE SI NON SELECTION DE CASE
 jQuery(document).ready(function ($) {
+  //BOUTON SUPPRESSSION DESACTIVE SI NON SELECTION DE CASE
   // Fonction pour gérer l'activation/désactivation du bouton de suppression des slides
   function toggleDeleteButton() {
     const selectedSlides = $("input[name='selected_slides[]']:checked").length;
@@ -72,4 +67,21 @@ jQuery(document).ready(function ($) {
   $("input[name='selected_slides[]']").change(function () {
     toggleDeleteButton();
   });
+
+  //BOUTON CREER CARROUSEL
+  // Fonction pour activer/désactiver le bouton "Créer"
+  function toggleCreateButton() {
+    const carrouselName = $("#carrousel_name").val().trim();
+    if (carrouselName === "") {
+      $("#submit_carrousel_name").prop("disabled", true);
+    } else {
+      $("#submit_carrousel_name").prop("disabled", false);
+    }
+  }
+
+  // Appliquer la vérification initiale
+  toggleCreateButton();
+
+  // Écouter les événements de changement sur le champ du formulaire
+  $("#carrousel_name").on("input", toggleCreateButton);
 });

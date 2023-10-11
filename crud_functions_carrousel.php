@@ -3,6 +3,8 @@
 // Create a new carrousel with the shortcode
 function createCarrousel($wpdb, $carrousel_table_name)
 {
+    $carrousel_id = null;  // Initialise à null
+
     if (isset($_POST['submit_carrousel_name']) && check_admin_referer('create_carrousel_action', 'create_carrousel_nonce')) {
         $carrousel_name = sanitize_text_field($_POST['carrousel_name']);
 
@@ -18,6 +20,8 @@ function createCarrousel($wpdb, $carrousel_table_name)
         echo '<div class="notice notice-success"><p>Carrousel créé avec succès ! Voici votre shortcode: </p>';
         echo '<code>[custom_carrousel id="' . $carrousel_id . '"]</code></div>';
     }
+    return $carrousel_id;  // Retourne l'ID du nouveau carrousel
+
 }
 
 // Create a new slide
