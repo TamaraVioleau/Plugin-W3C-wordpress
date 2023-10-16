@@ -248,7 +248,6 @@ function custom_link_carrousel_page()
         }
     }
 
-
     //Si on clique sur onglet choisir le carrousel
     elseif ($active_tab == 'choose_carrousel') {
         // Afficher le menu déroulant pour choisir un carrousel existant
@@ -375,6 +374,7 @@ function custom_link_carrousel_page()
         }
     }
 
+    //Modification multiple des slides au sein d'un carrousel
     if (isset($_POST['update_multiple_slides'])) {
         updateMultipleSlides($_POST, $wpdb, $slides_table_name);
     }
