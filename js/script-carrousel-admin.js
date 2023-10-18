@@ -2,16 +2,26 @@
 jQuery(document).ready(function ($) {
   // Fonction pour gérer l'activation/désactivation des boutons
   function toggleButtons(carrouselSelected) {
+    var countSlides = $("#carrouselSelect option:selected").data(
+      "count-slides"
+    );
+
     if (carrouselSelected) {
-      $(
-        "#editCarrouselButton, #modifyCarrouselButton, #deleteCarrouselButton"
-      ).prop("disabled", false);
+      $("#editCarrouselButton, #deleteCarrouselButton").prop("disabled", false);
+
+      // Activer ou désactiver le bouton "Modifier les slides" en fonction du nombre de slides
+      if (countSlides > 0) {
+        $("#modifyCarrouselButton").prop("disabled", false);
+      } else {
+        $("#modifyCarrouselButton").prop("disabled", true);
+      }
     } else {
       $(
         "#editCarrouselButton, #modifyCarrouselButton, #deleteCarrouselButton"
       ).prop("disabled", true);
     }
   }
+
   // Gérer le changement dans le menu déroulant
   $("#carrouselSelect").change(function () {
     const carrouselSelected = $(this).val();
