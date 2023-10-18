@@ -10,10 +10,29 @@
                 echo '<option value="" data-default="true">Choisir le carrousel</option>';
             }
 
+            // Déclare la variable globale $wpdb pour accéder aux fonctionnalités de la base de données de WordPress
+            global $wpdb;
+
+            // Parcourir tous les carrousels disponibles
             foreach ($all_carrousels as $carrousel) {
+                // Détermine si l'option actuelle doit être sélectionnée
                 $selected = ($carrousel_id == $carrousel->carrousel_id) ? 'selected="selected"' : '';
-                echo '<option value="' . esc_attr($carrousel->carrousel_id) . '" ' . $selected . '>' . esc_html($carrousel->name) . '</option>';
+
+                // Récupère l'ID du carrousel courant dans la boucle
+                $current_carrousel_id = $carrousel->carrousel_id;
+
+                try {
+                    // Compte le nombre de slides associées à ce carrousel
+                    $count_slides = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}custom_carrousel_slides WHERE carrousel_id = $current_carrousel_id");
+                } catch (Exception $e) {
+                    // Gérer les exceptions
+                    echo 'Caught exception: ',  $e->getMessage(), "\n";
+                }
+
+                // Affiche l'option dans le menu déroulant
+                echo '<option value="' . esc_attr($current_carrousel_id) . '" ' . $selected . ' data-count-slides="' . $count_slides . '">' . esc_html($carrousel->name) . '</option>';
             }
+
             ?>
 
         </select>
