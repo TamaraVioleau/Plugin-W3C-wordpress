@@ -13,6 +13,7 @@ Elle permet de gérer des liens et des carrousels personnalisés en reprenant le
 3. **Menu d'Administration**: L'extension ajoute un menu d'administration depuis lequel vous pouvez gérer vos liens et vos carrousels.
 
 ### Sous-menus
+
 - **Liens**: Page où vous pouvez ajouter, visualiser et supprimer les liens personnalisés.
 - **Carrousel**: Une sous-page pour gérer vos carrousel personnalisés et ses différentes slides.
 
@@ -36,4 +37,6 @@ Elle permet de gérer des liens et des carrousels personnalisés en reprenant le
 3. **Utiliser le Shortcode Généré**: Une fois le carrousel et ses slides ajoutés, un shortcode sera généré. Copiez ce shortcode et collez-le dans vos articles ou pages pour afficher le carrousel personnalisé.
 
 ## Support et Contribution
+
 Pour toute question ou contribution, n'hésitez pas à contacter Tamara VIOLEAU.
+Github : <a href="https://github.com/TamaraVioleau" target="_blank" rel="noreferrer">TamaraVioleau</a>
