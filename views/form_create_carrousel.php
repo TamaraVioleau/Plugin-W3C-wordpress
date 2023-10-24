@@ -1,3 +1,6 @@
+<!-- Création d'un nouveau carrousel
+Formulaire pour créer un nouveau carrousel -->
+
 <div class="wrap" id="wrap_createform">
     <h2>Créer un nouveau carrousel</h2>
     <form method="post" action="">

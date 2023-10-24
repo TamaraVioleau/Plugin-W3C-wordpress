@@ -1,3 +1,6 @@
+<!-- Fichier CRUD insérés dans le fichier custom_carrousel.php
+ -->
+
 <?php
 
 // Create a new carrousel with the shortcode

@@ -1,3 +1,9 @@
+<!-- Ajout d'une slide au carrousel
+On récupère l'ID du carrousel dans l'URL
+On affiche un formulaire pour ajouter une slide
+On récupère les données du formulaire et on les enregistre dans la table wp_carrousel_slides
+ On affiche un message de confirmation -->
+
 <script>
     jQuery(document).ready(function($) {
         $('#upload_image_button').on('click', function(e) {
@@ -27,7 +33,7 @@
     });
 </script>
 
-
+<!-- Formulaire d'ajout d'une slide -->
 <div class="wrap">
     <h3>Ajouter une slide au carrousel <?php echo $carrousel_id; ?></h3>
     <form method="post" action="">

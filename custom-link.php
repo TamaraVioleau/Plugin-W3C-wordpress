@@ -1,4 +1,11 @@
 <?php
+
+/**
+ * Fichier principal pour les liens personnalisés
+ * Description: Une extension pour créer les liens personnalisés.
+ **/
+
+
 // Section pour inclure les fichiers CSS
 // Chargement du fichier CSS dans le panneau d'administration WordPress
 function custom_link_admin_enqueue_scripts()

@@ -39,4 +39,5 @@ Elle permet de gérer des liens et des carrousels personnalisés en reprenant le
 ## Support et Contribution
 
 Pour toute question ou contribution, n'hésitez pas à contacter Tamara VIOLEAU.
+</b>
 Github : <a href="https://github.com/TamaraVioleau" target="_blank" rel="noreferrer">TamaraVioleau</a>

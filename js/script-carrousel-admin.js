@@ -1,4 +1,7 @@
-//FONCTION BOUTON MENU DEROULANT
+/* Fichier JS pour la page d'administration des carrousels
+ */
+
+///FONCTION BOUTON MENU DEROULANT
 jQuery(document).ready(function ($) {
   // Fonction pour gérer l'activation/désactivation des boutons
   function toggleButtons(carrouselSelected) {

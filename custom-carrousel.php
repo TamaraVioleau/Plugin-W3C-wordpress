@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * Fichier principal pour le Carrousel
+ * Description: Une extension pour créer carrousels personnalisés.
+ **/
+
 // Inclure les fichiers CSS/JS
 function custom_carrousel_enqueue_assets()
 {

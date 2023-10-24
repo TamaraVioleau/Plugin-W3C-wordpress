@@ -31,10 +31,10 @@ Ce code fournit un moyen pour les administrateurs de WordPress de créer, modifi
 4. Les styles et scripts nécessaires sont automatiquement inclus, que vous soyez dans l'interface d'administration ou sur le site lui-même.
 
 > **À noter :**
-
-- Assurez-vous d'avoir sauvegardé votre base de données avant d'activer ou de désactiver ce plugin pour éviter toute perte de données.
-- Ce plugin utilise le **wpdb** global de WordPress pour interagir avec la base de données.
-- Pour une personnalisation ou une extension des fonctionnalités, veuillez consulter un développeur.
+>
+> - Assurez-vous d'avoir sauvegardé votre base de données avant d'activer ou de désactiver ce plugin pour éviter toute perte de données.
+> - Ce plugin utilise le **wpdb** global de WordPress pour interagir avec la base de données.
+> - Pour une personnalisation ou une extension des fonctionnalités, veuillez consulter un développeur.
 
 ## Détails Techniques
 

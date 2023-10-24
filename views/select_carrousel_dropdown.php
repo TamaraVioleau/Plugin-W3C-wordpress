@@ -1,3 +1,7 @@
+<!-- Affiche le menu déroulant pour sélectionner le carrousel à modifier
+Affiche le shortcode du carrousel sélectionné
+Affiche les boutons pour modifier le carrousel sélectionné -->
+
 <div class="wrap">
     <h2>Choisir le carrousel</h2>
     <form method="post" action="">
@@ -47,6 +51,8 @@
     </div>
 </div>
 
+<!-- Js pour afficher le shortcode du carrousel sélectionné
+Js pour copier le shortcode du carrousel sélectionné -->
 
 <script type="text/javascript">
     document.getElementById('carrouselSelect').addEventListener('change', function() {
